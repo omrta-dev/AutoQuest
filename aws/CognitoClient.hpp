@@ -10,7 +10,7 @@ class CognitoClient
 public:
     void connectClient();
     void closeClient();
-    void sendAccessTokenToServer(const std::string& accessToken);
+    bool sendAccessTokenToServer(const std::string& accessToken);
     void logIn();
     void logOut();
     void signUp();
@@ -21,9 +21,14 @@ public:
     void loggedInMenu();
     void loggedOutMenu();
 private:
-    std::shared_ptr<Aws::CognitoIdentityProvider::CognitoIdentityProviderClient> amazonCognitoClient;
-    Aws::SDKOptions options;
-    const std::string region = Aws::Region::US_WEST_2;
-    const unsigned short port = 27015;
-    const std::string clientId = "108ttadt9o737in20emgl7fjpm";
+    std::shared_ptr<Aws::CognitoIdentityProvider::CognitoIdentityProviderClient> amazonCognitoClient_;
+    Aws::SDKOptions sdkOptions_;
+    const std::string region_ = Aws::Region::US_WEST_2;
+    const unsigned short port_ = 27015;
+    const std::string clientId_ = "108ttadt9o737in20emgl7fjpm";
+    bool loggedIn_;
+    std::string tokenType_;
+    std::string accessToken_;
+    std::string idToken_;
+    std::string refreshToken_;
 };

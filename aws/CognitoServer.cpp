@@ -23,12 +23,12 @@ void CognitoServer::startServer()
     initCoginto();
 
     sf::TcpListener tcpListener;
-    if (tcpListener.listen(port) != sf::Socket::Done)
+    if (tcpListener.listen(port_) != sf::Socket::Done)
     {
         // error
         return;
     }
-    std::cout << "Server is listening to port " << port << ", waiting for connections... " << std::endl;
+    std::cout << "Server is listening to port " << port_ << ", waiting for connections... " << std::endl;
 
     while (true)
     {
@@ -42,7 +42,7 @@ void CognitoServer::startServer()
         std::cout << "Client connected: " << socket.getRemoteAddress() << std::endl;
 
         // Receive a message back from the client
-        char in[128];
+        char in[1024];
         std::size_t received;
         if (socket.receive(in, sizeof(in), received) != sf::Socket::Done)
             return;
@@ -67,9 +67,9 @@ void CognitoServer::initCoginto()
     };
     Aws::InitAPI(options);
     Aws::Client::ClientConfiguration clientConfiguration;
-    clientConfiguration.region = region;
+    clientConfiguration.region = region_;
 
-    amazonCognitoClient = Aws::MakeShared<Aws::CognitoIdentityProvider::CognitoIdentityProviderClient>(
+    amazonCognitoClient_ = Aws::MakeShared<Aws::CognitoIdentityProvider::CognitoIdentityProviderClient>(
             "CognitoIdentityProviderClient", clientConfiguration);
 }
 
@@ -77,7 +77,7 @@ bool CognitoServer::isUserValid(const std::string &accessToken)
 {
     Aws::CognitoIdentityProvider::Model::GetUserRequest getUserRequest;
     getUserRequest.SetAccessToken(accessToken);
-    Aws::CognitoIdentityProvider::Model::GetUserOutcome getUserOutcome{amazonCognitoClient->GetUser(getUserRequest)};
+    Aws::CognitoIdentityProvider::Model::GetUserOutcome getUserOutcome{amazonCognitoClient_->GetUser(getUserRequest)};
     if (getUserOutcome.IsSuccess())
     {
         Aws::CognitoIdentityProvider::Model::GetUserResult getUserResult{getUserOutcome.GetResult()};
