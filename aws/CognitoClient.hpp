@@ -4,6 +4,7 @@
 #include <aws/core/Region.h>
 #include <aws/core/Aws.h>
 #include <aws/cognito-idp/CognitoIdentityProviderClient.h>
+#include <SFML/Network/IpAddress.hpp>
 
 class CognitoClient
 {
@@ -25,6 +26,7 @@ private:
     Aws::SDKOptions sdkOptions_;
     const std::string region_ = Aws::Region::US_WEST_2;
     const unsigned short port_ = 27015;
+    const std::string serverAddress_ = "44.233.89.189";
     const std::string clientId_ = "108ttadt9o737in20emgl7fjpm";
     bool loggedIn_;
     std::string tokenType_;

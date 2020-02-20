@@ -2,6 +2,9 @@
 #include <tabulate/table.hpp>
 #include "aws/CognitoServer.hpp"
 #include "aws/CognitoClient.hpp"
+
+#include "game/Game.hpp"
+
 void showMenu()
 {
     tabulate::Table optionTable;
@@ -37,7 +40,9 @@ void processInput()
 
 int main()
 {
-    showMenu();
-    processInput();
-    return 0;
+    Game game;
+    game.startGame();
+    //showMenu();
+    //processInput();
+    //return 0;
 }

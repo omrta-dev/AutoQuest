@@ -9,7 +9,7 @@ find_package(SFML 2.5 COMPONENTS audio graphics network system window REQUIRED)
 find_package(AWSSDK REQUIRED COMPONENTS core cognito-identity cognito-idp)
 include_directories(external_includes/)
 
-add_executable(${PROJECT_NAME} main.cpp aws/CognitoServer.cpp aws/CognitoServer.hpp aws/CognitoClient.cpp aws/CognitoClient.hpp)
+add_executable(${PROJECT_NAME} main.cpp aws/CognitoServer.cpp aws/CognitoServer.hpp aws/CognitoClient.cpp aws/CognitoClient.hpp game/Game.cpp game/Game.hpp game/InputManager.cpp game/InputManager.hpp game/ResourceManager.cpp game/ResourceManager.hpp game/Entity.cpp game/Entity.hpp)
 
 # SFML
 target_link_libraries(${PROJECT_NAME} sfml-audio sfml-graphics sfml-network sfml-system sfml-window)

@@ -8,23 +8,20 @@
 #include <tabulate/table.hpp>
 
 #include <aws/core/utils/logging/ConsoleLogSystem.h>
-#include <aws/core/utils/logging/AWSLogging.h>
 #include <aws/core/utils/Outcome.h>
 #include <aws/cognito-idp/model/AttributeType.h>
 #include <aws/cognito-idp/model/SignUpRequest.h>
 #include <aws/cognito-idp/model/SignUpResult.h>
 #include <aws/cognito-idp/model/ConfirmSignUpRequest.h>
-#include <aws/cognito-idp/model/ConfirmSignUpResult.h>
 #include <aws/cognito-idp/model/InitiateAuthRequest.h>
 #include <aws/cognito-idp/model/InitiateAuthResult.h>
 #include <aws/cognito-idp/model/ForgotPasswordRequest.h>
-#include <aws/cognito-idp/model/ForgotPasswordResult.h>
 #include <aws/cognito-idp/model/ConfirmForgotPasswordRequest.h>
-#include <aws/cognito-idp/model/ConfirmForgotPasswordResult.h>
 #include <aws/cognito-idp/model/ChangePasswordRequest.h>
-#include <aws/cognito-idp/model/ChangePasswordResult.h>
 #include <aws/cognito-idp/model/GetUserRequest.h>
 #include <aws/cognito-idp/model/GetUserResult.h>
+#include <aws/cognito-identity/model/GetCredentialsForIdentityRequest.h>
+#include <aws/cognito-identity/model/GetCredentialsForIdentityResult.h>
 #include <aws/core/client/ClientConfiguration.h>
 
 void CognitoClient::connectClient()
@@ -55,12 +52,8 @@ bool CognitoClient::sendAccessTokenToServer(const std::string &accessToken)
 {
     // Ask for the server address
     sf::IpAddress server;
-    do
-    {
-        std::cout << "Type the address or name of the server to connect to: ";
-        std::cin >> server;
-    } while (server == sf::IpAddress::None);
 
+    server = sf::IpAddress(serverAddress_);
     // Create a socket for communicating with the server
     sf::TcpSocket socket;
 
@@ -419,5 +412,3 @@ void CognitoClient::loggedOutMenu()
             return;
     }
 }
-
-
