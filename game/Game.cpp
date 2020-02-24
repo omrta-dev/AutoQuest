@@ -7,8 +7,9 @@
 
 #include <iostream>
 
-Game::Game() : window_(new sf::RenderWindow({800, 900}, "", sf::Style::Default)), inputManager_(window_)
+Game::Game() : window_(new sf::RenderWindow({800, 900}, "", sf::Style::Default, sf::ContextSettings(0, 0, 4, 4, 3))), inputManager_(window_)
 {
+    gladLoadGL();
     window_->setFramerateLimit(60);
 }
 
@@ -28,7 +29,17 @@ void Game::startGame()
 
 void Game::initializeResources()
 {
-    entities.emplace_back();
+    std::vector<aik::Vertex> vertices;
+    vertices.emplace_back(glm::vec3(0, 0, 0), glm::vec4(1.0, 0.0, 0.0, 1.0));
+    vertices.emplace_back(glm::vec3(0, 1, 0), glm::vec4(1.0, 0.0, 0.0, 1.0));
+    vertices.emplace_back(glm::vec3(1, 1, 0), glm::vec4(1.0, 0.0, 0.0, 1.0));
+
+    vao_.createVertexArrayObject();
+    vao_.bind();
+    vbo_.createVertexBufferObject();
+    vbo_.bind();
+    vbo_.setData(vertices);
+    vao_.configureAttribs();
 }
 
 void Game::gameLoop()
@@ -55,9 +66,7 @@ void Game::processPhysics()
 void Game::renderGraphics()
 {
     window_->clear(sf::Color(50, 100, 150, 255));
-    for(const aik::Entity& entity : entities)
-    {
-        window_->draw(entity);
-    }
+    vao_.bind();
+    glDrawArrays(GL_TRIANGLES, 0, 3);
     window_->display();
 }

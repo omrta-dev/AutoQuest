@@ -5,8 +5,6 @@
 #include <SFML/Network/IpAddress.hpp>
 #include <SFML/Network/TcpSocket.hpp>
 
-#include <tabulate/table.hpp>
-
 #include <aws/core/utils/logging/ConsoleLogSystem.h>
 #include <aws/core/utils/Outcome.h>
 #include <aws/cognito-idp/model/AttributeType.h>
@@ -342,73 +340,73 @@ void CognitoClient::displayInfo()
 
 void CognitoClient::loggedInMenu()
 {
-    tabulate::Table optionTable;
-    optionTable.add_row({"Select an option"})[0].format().font_align(tabulate::FontAlign::center)
-            .font_style({tabulate::FontStyle::bold});
-    tabulate::Table options;
-    options.add_row({"0", "DisplayInfo"});
-    options.add_row({"1", "Change Password"});
-    options.add_row({"2", "Log Out"});
-    options.add_row({"3", "Quit"});
-
-    optionTable.add_row({options});
-    std::cout << "\n" << optionTable << "\n" << std::endl;
-
-    std::cout << "Your choice: ";
-
-    int selection;
-    std::cin >> selection;
-    switch (selection)
-    {
-        case 0:
-            displayInfo();
-            break;
-        case 1:
-            changePassword();
-            break;
-        case 2:
-            logOut();
-            break;
-        case 3:
-        default:
-            return;
-    }
+    //tabulate::Table optionTable;
+    //optionTable.add_row({"Select an option"})[0].format().font_align(tabulate::FontAlign::center)
+    //        .font_style({tabulate::FontStyle::bold});
+    //tabulate::Table options;
+    //options.add_row({"0", "DisplayInfo"});
+    //options.add_row({"1", "Change Password"});
+    //options.add_row({"2", "Log Out"});
+    //options.add_row({"3", "Quit"});
+    //
+    //optionTable.add_row({options});
+    //std::cout << "\n" << optionTable << "\n" << std::endl;
+    //
+    //std::cout << "Your choice: ";
+    //
+    //int selection;
+    //std::cin >> selection;
+    //switch (selection)
+    //{
+    //    case 0:
+    //        displayInfo();
+    //        break;
+    //    case 1:
+    //        changePassword();
+    //        break;
+    //    case 2:
+    //        logOut();
+    //        break;
+    //    case 3:
+    //    default:
+    //        return;
+    //}
 }
 
 void CognitoClient::loggedOutMenu()
 {
-    tabulate::Table optionTable;
-    optionTable.add_row({"Select an option"})[0].format().font_align(tabulate::FontAlign::center)
-            .font_style({tabulate::FontStyle::bold});
-    tabulate::Table options;
-    options.add_row({"0", "Log In"});
-    options.add_row({"1", "Sign Up"});
-    options.add_row({"2", "Confirm Registration"});
-    options.add_row({"3", "Forgot Password"});
-    options.add_row({"4", "Quit"});
-
-    optionTable.add_row({options});
-    std::cout << "\n" << optionTable << "\n" << std::endl;
-
-    std::cout << "Your choice: ";
-
-    int selection;
-    std::cin >> selection;
-    switch (selection)
-    {
-        case 0:
-            logIn();
-            break;
-        case 1:
-            signUp();
-            break;
-        case 2:
-            confirmRegistration();
-            break;
-        case 3:
-            forgotPassword();
-            break;
-        default:
-            return;
-    }
+    //tabulate::Table optionTable;
+    //optionTable.add_row({"Select an option"})[0].format().font_align(tabulate::FontAlign::center)
+    //        .font_style({tabulate::FontStyle::bold});
+    //tabulate::Table options;
+    //options.add_row({"0", "Log In"});
+    //options.add_row({"1", "Sign Up"});
+    //options.add_row({"2", "Confirm Registration"});
+    //options.add_row({"3", "Forgot Password"});
+    //options.add_row({"4", "Quit"});
+    //
+    //optionTable.add_row({options});
+    //std::cout << "\n" << optionTable << "\n" << std::endl;
+    //
+    //std::cout << "Your choice: ";
+    //
+    //int selection;
+    //std::cin >> selection;
+    //switch (selection)
+    //{
+    //    case 0:
+    //        logIn();
+    //        break;
+    //    case 1:
+    //        signUp();
+    //        break;
+    //    case 2:
+    //        confirmRegistration();
+    //        break;
+    //    case 3:
+    //        forgotPassword();
+    //        break;
+    //    default:
+    //        return;
+    //}
 }

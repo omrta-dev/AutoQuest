@@ -7,6 +7,9 @@
 #include "InputManager.hpp"
 #include "ResourceManager.hpp"
 #include "Entity.hpp"
+#include "glpp/Vertex.hpp"
+#include "glpp/VertexArrayObject.hpp"
+#include "glpp/VertexBufferObject.hpp"
 
 class Game
 {
@@ -23,6 +26,7 @@ private:
     std::shared_ptr<sf::RenderWindow> window_;
     aik::InputManager inputManager_;
     aik::ResourceManager resourceManager_;
-    std::vector<aik::Entity> entities;
+    aik::VertexArrayObject vao_;
+    aik::VertexBufferObject vbo_;
 };
 

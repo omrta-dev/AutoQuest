@@ -3,13 +3,32 @@
 //
 
 #include "Entity.hpp"
-#include <SFML/Graphics/Texture.hpp>
 
 aik::Entity::Entity()
 {
-    this->setPosition(50, 50);
-    sf::Texture texture;
-    texture.create(32, 32);
-    this->setTexture(texture);
-    this->setColor(sf::Color(0, 255, 0));
+
+}
+
+void aik::Entity::setRotation(glm::vec3 rotation)
+{
+    isModified_ = true;
+    rotation_ = rotation;
+}
+
+void aik::Entity::setScale(glm::vec3 scale)
+{
+    isModified_ = true;
+    scale_ = scale;
+}
+
+void aik::Entity::setPosition(glm::vec3 position)
+{
+    isModified_ = true;
+    position_ = position;
+}
+
+void aik::Entity::move(glm::vec3 offset)
+{
+    isModified_ = true;
+    position_ += offset;
 }
