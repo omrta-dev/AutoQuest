@@ -29,10 +29,11 @@ void Game::startGame()
 
 void Game::initializeResources()
 {
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     std::vector<aik::Vertex> vertices;
     vertices.emplace_back(glm::vec3(0, 0, 0), glm::vec4(1.0, 0.0, 0.0, 1.0));
-    vertices.emplace_back(glm::vec3(0, 1, 0), glm::vec4(1.0, 0.0, 0.0, 1.0));
-    vertices.emplace_back(glm::vec3(1, 1, 0), glm::vec4(1.0, 0.0, 0.0, 1.0));
+    vertices.emplace_back(glm::vec3(0, .9, 0), glm::vec4(1.0, 0.0, 0.0, 1.0));
+    vertices.emplace_back(glm::vec3(.9, .9, 0), glm::vec4(1.0, 0.0, 0.0, 1.0));
 
     vao_.createVertexArrayObject();
     vao_.bind();
@@ -40,6 +41,8 @@ void Game::initializeResources()
     vbo_.bind();
     vbo_.setData(vertices);
     vao_.configureAttribs();
+
+    shader_.loadFromFile("assets/shaders/vert.vert", "assets/shaders/frag.frag");
 }
 
 void Game::gameLoop()
@@ -65,8 +68,9 @@ void Game::processPhysics()
 
 void Game::renderGraphics()
 {
-    window_->clear(sf::Color(50, 100, 150, 255));
+    glClear(GL_COLOR_BUFFER_BIT);
+    sf::Shader::bind(&shader_);
     vao_.bind();
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawArrays(GL_LINE_LOOP, 0, 3);
     window_->display();
 }

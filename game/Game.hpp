@@ -4,6 +4,7 @@
 
 #pragma once
 #include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/Shader.hpp>
 #include "InputManager.hpp"
 #include "ResourceManager.hpp"
 #include "Entity.hpp"
@@ -24,6 +25,7 @@ private:
     void processPhysics();
     void renderGraphics();
     std::shared_ptr<sf::RenderWindow> window_;
+    sf::Shader shader_;
     aik::InputManager inputManager_;
     aik::ResourceManager resourceManager_;
     aik::VertexArrayObject vao_;
