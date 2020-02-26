@@ -10,7 +10,7 @@ find_package(AWSSDK REQUIRED COMPONENTS core cognito-identity cognito-idp)
 include_directories(external_includes/glm/)
 add_subdirectory(external_includes/glad/)
 
-add_executable(${PROJECT_NAME} main.cpp aws/CognitoServer.cpp aws/CognitoServer.hpp aws/CognitoClient.cpp aws/CognitoClient.hpp game/Game.cpp game/Game.hpp game/InputManager.cpp game/InputManager.hpp game/ResourceManager.cpp game/ResourceManager.hpp game/Entity.cpp game/Entity.hpp game/glpp/VertexArrayObject.cpp game/glpp/VertexArrayObject.hpp game/glpp/VertexBufferObject.cpp game/glpp/VertexBufferObject.hpp game/glpp/Vertex.hpp)
+add_executable(${PROJECT_NAME} main.cpp aws/CognitoServer.cpp aws/CognitoServer.hpp aws/CognitoClient.cpp aws/CognitoClient.hpp game/Game.cpp game/Game.hpp game/InputManager.cpp game/InputManager.hpp game/ResourceManager.cpp game/ResourceManager.hpp game/Entity.cpp game/Entity.hpp game/glpp/VertexArrayObject.cpp game/glpp/VertexArrayObject.hpp game/glpp/VertexBufferObject.cpp game/glpp/VertexBufferObject.hpp game/glpp/Vertex.hpp game/glpp/GlmGLSLWrapper.hpp)
 
 # SFML
 target_link_libraries(${PROJECT_NAME} PRIVATE sfml-audio sfml-graphics sfml-network sfml-system sfml-window)
