@@ -30,6 +30,7 @@ private:
     aik::ResourceManager resourceManager_;
     aik::VertexArrayObject vao_;
     aik::VertexBufferObject vbo_;
+    aik::VertexBufferObject ebo_;
     aik::Entity entity_;
 };
 

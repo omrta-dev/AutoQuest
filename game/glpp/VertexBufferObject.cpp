@@ -13,8 +13,9 @@ aik::VertexBufferObject::VertexBufferObject(aik::BufferTarget bufferTarget) : ve
 {
 }
 
-void aik::VertexBufferObject::createVertexBufferObject()
+void aik::VertexBufferObject::createVertexBufferObject(aik::BufferTarget bufferTarget)
 {
+    bufferTarget_ = bufferTarget;
     glGenBuffers(1, &vertexBufferObject_);
 }
 
@@ -25,7 +26,12 @@ void aik::VertexBufferObject::bind()
 
 void aik::VertexBufferObject::setData(const std::vector<aik::Vertex> &data)
 {
-    glBufferData(static_cast<GLuint>(bufferTarget_), data.size() * sizeof(data[0]), data.data(), GL_STATIC_DRAW);
+    glBufferData(static_cast<GLuint>(bufferTarget_), data.size() * sizeof(aik::Vertex), data.data(), GL_STATIC_DRAW);
+}
+
+void aik::VertexBufferObject::setData(const std::vector<unsigned int> &data)
+{
+    glBufferData(static_cast<GLuint>(bufferTarget_), data.size() * sizeof(unsigned int), data.data(), GL_STATIC_DRAW);
 }
 
 void aik::VertexBufferObject::addData(GLintptr offset, const std::vector<aik::Vertex> &data)

@@ -1,7 +1,8 @@
 #version 330 core
 
 in vec4 inputColor;
+out vec4 outputColor;
 
 void main() {
-    gl_FragColor = inputColor;
+    outputColor = inputColor;
 }

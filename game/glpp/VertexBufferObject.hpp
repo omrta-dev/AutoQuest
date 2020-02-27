@@ -17,9 +17,10 @@ namespace aik
         VertexBufferObject();
         VertexBufferObject(BufferTarget bufferTarget);
         void setTarget(BufferTarget bufferTarget) {bufferTarget_ = bufferTarget;}
-        void createVertexBufferObject();
+        void createVertexBufferObject(aik::BufferTarget bufferTarget = BufferTarget::ARRAY);
         void bind();
         void setData(const std::vector<aik::Vertex>& data);
+        void setData(const std::vector<unsigned int>& data);
         void addData(GLintptr offset, const std::vector<aik::Vertex>& data);
     private:
         GLuint vertexBufferObject_;
