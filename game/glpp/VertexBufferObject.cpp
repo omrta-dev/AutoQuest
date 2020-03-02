@@ -3,7 +3,7 @@
 //
 
 #include "VertexBufferObject.hpp"
-
+#include <iostream>
 aik::VertexBufferObject::VertexBufferObject() : vertexBufferObject_(0)
 {
     bufferTarget_ = BufferTarget::ARRAY;

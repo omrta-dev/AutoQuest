@@ -6,17 +6,24 @@
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Event.hpp>
-#include <memory>
+#include <unordered_set>
+#include "InputEvent.hpp"
 
 
 namespace aik
 {
+    enum class InputMode {POLL, READ};
+
     class InputManager
     {
     public:
-        InputManager(std::shared_ptr<sf::RenderWindow> window);
+        InputManager();
+        void addEvent(aik::InputEvent inputEvent);
         void processEvents(sf::Event event);
+        void setInputMode(InputMode poll);
     private:
-        std::shared_ptr<sf::RenderWindow> window_;
+        std::unordered_map<unsigned int, std::vector<aik::InputEvent>> inputEvents_;
+        InputMode inputMode_;
     };
 }
+

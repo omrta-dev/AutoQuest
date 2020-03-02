@@ -77,8 +77,6 @@ const glm::mat4& aik::Entity::getModel()
         if(rotationAngle_ != 0.0f)
             model_ = glm::rotate(model_, glm::radians(rotationAngle_), rotation_);
         isModified_ = false;
-
-        // TODO: add debug statement for model matrix printing
     }
     return model_;
 }

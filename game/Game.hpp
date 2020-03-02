@@ -11,6 +11,7 @@
 #include "glpp/Vertex.hpp"
 #include "glpp/VertexArrayObject.hpp"
 #include "glpp/VertexBufferObject.hpp"
+#include "Camera.hpp"
 
 class Game
 {
@@ -24,13 +25,14 @@ private:
     void processInput();
     void processPhysics();
     void renderGraphics();
-    std::shared_ptr<sf::RenderWindow> window_;
+    sf::RenderWindow window_;
     sf::Shader shader_;
     aik::InputManager inputManager_;
     aik::ResourceManager resourceManager_;
     aik::VertexArrayObject vao_;
     aik::VertexBufferObject vbo_;
     aik::VertexBufferObject ebo_;
+    aik::Camera camera_;
     aik::Entity entity_;
 };
 
