@@ -5,7 +5,6 @@
 #include "Game.hpp"
 #include "SFML/Window/Event.hpp"
 #include "glpp/GlmGLSLWrapper.hpp"
-#include <Source/OBJ_Loader.h>
 
 Game::Game() : window_({800, 900}, "", sf::Style::Default, sf::ContextSettings(0, 0, 4, 4, 3))
 {
@@ -36,16 +35,6 @@ void Game::initializeResources()
 
     std::vector<aik::Vertex> vertices;
 
-    objl::Loader loader;
-    loader.LoadFile("assets/models/monkey.obj");
-    vertices.reserve(loader.LoadedVertices.size());
-    int t = 0;
-    for(const auto& vert : loader.LoadedVertices)
-    {
-        vertices.emplace_back(glm::vec3(vert.Position.X, vert.Position.Y, vert.Position.Z), glm::vec4(1));
-        t++;
-    }
-
     entity_.addVertices(vertices);
     entity_.setScale(glm::vec3(500.0f));
     entity_.setPosition(glm::vec3(750, 750, 0 ));
@@ -58,7 +47,6 @@ void Game::initializeResources()
     vao_.configureAttribs();
     ebo_.createVertexBufferObject(aik::BufferTarget::ELEMENT_BUFFER);
     ebo_.bind();
-    ebo_.setData(loader.LoadedIndices);
 
     shader_.loadFromFile("assets/shaders/vert.vert", "assets/shaders/frag.frag");
 
