@@ -10,6 +10,7 @@
 #include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
 #include "glpp/Vertex.hpp"
+#include "glpp/Texture.hpp"
 
 /*
  * Entity class which will be the base class for any drawable openGL entity
@@ -22,11 +23,20 @@ namespace aik
     {
     public:
         Entity();
+        Entity(std::vector<aik::Vertex> vertices, std::vector<unsigned int> indices, std::vector<aik::Texture> textures);
         void addVertex(aik::Vertex vertex);
         void addVertices(std::vector<aik::Vertex> vertices);
         void setVertices(std::vector<aik::Vertex> vertices);
         void clearVertices();
         inline const std::vector<aik::Vertex>& getVertices() {return vertices_;}
+        void addIndex(unsigned int index);
+        void setIndices(std::vector<unsigned int> indices);
+        void clearIndices();
+        inline const std::vector<unsigned int>& getIndices() {return indices_;};
+        void addTexture(aik::Texture texture);
+        void setTextures(std::vector<aik::Texture> textures);
+        void clearTextures();
+        inline const std::vector<aik::Texture>& getTextures() {return textures_;};
         void setRotation(glm::vec3 rotationAxis, float degree);
         inline glm::vec3 getRotation() const {return rotation_;}
         void setScale(glm::vec3 scale);
@@ -39,6 +49,8 @@ namespace aik
     private:
         bool isModified_;
         std::vector<aik::Vertex> vertices_;
+        std::vector<unsigned int> indices_;
+        std::vector<aik::Texture> textures_;
         glm::vec3 rotation_;
         float rotationAngle_;
         glm::vec3 scale_;

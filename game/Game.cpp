@@ -6,6 +6,8 @@
 #include "SFML/Window/Event.hpp"
 #include "glpp/GlmGLSLWrapper.hpp"
 
+constexpr unsigned int model_index = 6;
+
 Game::Game() : window_({800, 900}, "", sf::Style::Default, sf::ContextSettings(0, 0, 4, 4, 3))
 {
     gladLoadGL();
@@ -33,21 +35,22 @@ void Game::initializeResources()
     glEnable(GL_DEPTH_TEST);
     glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 
+    model_.loadModel("assets/models/nanosuit.obj");
+    auto &meshes = model_.getMeshes();
     std::vector<aik::Vertex> vertices;
-
-    entity_.addVertices(vertices);
-    entity_.setScale(glm::vec3(500.0f));
-    entity_.setPosition(glm::vec3(750, 750, 0 ));
-
     vao_.createVertexArrayObject();
     vao_.bind();
     vbo_.createVertexBufferObject();
     vbo_.bind();
-    vbo_.setData(entity_.getVertices());
+    vbo_.setData(meshes[model_index].getVertices());
     vao_.configureAttribs();
     ebo_.createVertexBufferObject(aik::BufferTarget::ELEMENT_BUFFER);
     ebo_.bind();
+    ebo_.setData(meshes[model_index].getIndices());
 
+
+    meshes[model_index].setScale(glm::vec3(50.0f));
+    meshes[model_index].setPosition(glm::vec3(500, 500, 0 ));
     shader_.loadFromFile("assets/shaders/vert.vert", "assets/shaders/frag.frag");
 
     auto windowSize = window_.getSize();
@@ -63,8 +66,8 @@ void Game::initializeResources()
     inputManager_.addEvent({sf::Event::KeyPressed, sf::Keyboard::S, [this](){ camera_.move(aik::CameraMovement::DOWN);}});
     inputManager_.addEvent({sf::Event::KeyPressed, sf::Keyboard::A, [this](){ camera_.move(aik::CameraMovement::LEFT);}});
     inputManager_.addEvent({sf::Event::KeyPressed, sf::Keyboard::D, [this](){ camera_.move(aik::CameraMovement::RIGHT);}});
-    inputManager_.addEvent({sf::Event::KeyPressed, sf::Keyboard::Add, [this](){ entity_.rotate({0, 1, 0}, 10.0f);}});
-    inputManager_.addEvent({sf::Event::KeyPressed, sf::Keyboard::Subtract, [this](){ entity_.rotate({0, 1, 0}, -10.0f);}});
+    inputManager_.addEvent({sf::Event::KeyPressed, sf::Keyboard::Add, [this](){ model_.getMeshes()[model_index].rotate({0, 1, 0}, 10.0f);}});
+    inputManager_.addEvent({sf::Event::KeyPressed, sf::Keyboard::Subtract, [this](){ model_.getMeshes()[model_index].rotate({0, 1, 0}, -10.0f);}});
     inputManager_.addEvent({sf::Event::MouseWheelScrolled, 0, [this](){ camera_.zoom(-1.0);}});
     inputManager_.addEvent({sf::Event::MouseWheelScrolled, 1, [this](){ camera_.zoom(1.0);}});
 
@@ -108,11 +111,11 @@ void Game::renderGraphics()
 
     sf::Shader::bind(&shader_);
 
-    shader_.setUniform("model", aik::GlmGLSLWrapper::GlmToGlslMat4(entity_.getModel()));
+    shader_.setUniform("model", aik::GlmGLSLWrapper::GlmToGlslMat4(model_.getMeshes()[model_index].getModel()));
     shader_.setUniform("view", aik::GlmGLSLWrapper::GlmToGlslMat4( camera_.GetView()));
     shader_.setUniform("projection", aik::GlmGLSLWrapper::GlmToGlslMat4( camera_.GetProjection()));
 
     vao_.bind();
-    glDrawElements(GL_TRIANGLES, 1968, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, model_.getMeshes()[model_index].getIndices().size(), GL_UNSIGNED_INT, nullptr);
     window_.display();
 }

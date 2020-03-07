@@ -12,6 +12,7 @@
 #include "glpp/VertexArrayObject.hpp"
 #include "glpp/VertexBufferObject.hpp"
 #include "Camera.hpp"
+#include "Model.hpp"
 
 class Game
 {
@@ -33,6 +34,6 @@ private:
     aik::VertexBufferObject vbo_;
     aik::VertexBufferObject ebo_;
     aik::Camera camera_;
-    aik::Entity entity_;
+    aik::Model model_;
 };
 

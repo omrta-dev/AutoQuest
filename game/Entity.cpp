@@ -15,6 +15,15 @@ aik::Entity::Entity()
     isModified_ = true;
 }
 
+aik::Entity::Entity(std::vector<aik::Vertex> vertices, std::vector<unsigned int> indices,
+                    std::vector<aik::Texture> textures) : aik::Entity()
+{
+    vertices_ = std::move(vertices);
+    indices_ = std::move(indices);
+    textures_ = std::move(textures);
+}
+
+
 void aik::Entity::addVertex(aik::Vertex vertex)
 {
     vertices_.push_back(vertex);
@@ -34,6 +43,36 @@ void aik::Entity::setVertices(std::vector<aik::Vertex> vertices)
 void aik::Entity::clearVertices()
 {
     vertices_.clear();
+}
+
+void aik::Entity::addIndex(unsigned int index)
+{
+    indices_.push_back(index);
+}
+
+void aik::Entity::setIndices(std::vector<unsigned int> indices)
+{
+    indices_ = indices;
+}
+
+void aik::Entity::clearIndices()
+{
+    indices_.clear();
+}
+
+void aik::Entity::addTexture(aik::Texture texture)
+{
+    textures_.push_back(texture);
+}
+
+void aik::Entity::setTextures(std::vector<aik::Texture> textures)
+{
+    textures_ = textures;
+}
+
+void aik::Entity::clearTextures()
+{
+    textures_.clear();
 }
 
 void aik::Entity::setRotation(glm::vec3 rotationAxis, float degree)
@@ -80,4 +119,3 @@ const glm::mat4& aik::Entity::getModel()
     }
     return model_;
 }
-
