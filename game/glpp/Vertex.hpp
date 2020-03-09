@@ -3,16 +3,16 @@
 //
 
 #pragma once
-#include <glm/vec4.hpp>
 #include <glm/vec3.hpp>
-
+#include <glm/vec2.hpp>
 namespace aik
 {
     struct Vertex
     {
-        inline Vertex() {}
-        inline Vertex(glm::vec3 pos, glm::vec4 col) : position(pos), color(col) {}
-        glm::vec3 position;
-        glm::vec4 color;
+        Vertex() = default;
+        inline Vertex(glm::vec3 pos, glm::vec2 uvCoord, glm::vec3 norm) : position(pos), uv(uvCoord), normal(norm) {}
+        glm::vec3 position{};
+        glm::vec2 uv{};
+        glm::vec3 normal{};
     };
 }

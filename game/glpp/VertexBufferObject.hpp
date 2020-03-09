@@ -16,14 +16,19 @@ namespace aik
     public:
         VertexBufferObject();
         VertexBufferObject(BufferTarget bufferTarget);
+        void allocate(unsigned int size);
         void setTarget(BufferTarget bufferTarget) {bufferTarget_ = bufferTarget;}
         void createVertexBufferObject(aik::BufferTarget bufferTarget = BufferTarget::ARRAY);
         void bind();
         void setData(const std::vector<aik::Vertex>& data);
         void setData(const std::vector<unsigned int>& data);
         void addData(GLintptr offset, const std::vector<aik::Vertex>& data);
+        void addData(GLintptr offset, const std::vector<unsigned int> &data);
     private:
         GLuint vertexBufferObject_;
         BufferTarget bufferTarget_;
+        unsigned long maxSize_;
+        unsigned long currentSize_;
+
     };
 }

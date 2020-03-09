@@ -20,6 +20,7 @@ void aik::Camera::createOrthographic(float left, float right, float top, float b
     bottomEdge_ = bottom;
     zNear_ = zNear;
     zFar_ = zFar;
+    zoom_ = 0.0f;
     projection_ = glm::ortho(left, right, bottom, top, zNear, zFar);
 }
 
@@ -52,14 +53,11 @@ void aik::Camera::move(aik::CameraMovement movement)
 void aik::Camera::zoom(float zoomFactor)
 {
     zoom_ += zoomFactor;
-    zoom_ = glm::clamp(zoom_, 1.0f, 45.0f);
+    zoom_ = glm::clamp(zoom_, -50.0f, 50.0f);
     updateProjection();
 }
 
 void aik::Camera::updateProjection()
 {
-    if (isOrtho_)
-    {
-        projection_ = glm::ortho(leftEdge_, rightEdge_, bottomEdge_, topEdge_, zNear_, zFar_);
-    }
+    projection_ = glm::ortho(leftEdge_ + (zoom_ * 10), rightEdge_  - (zoom_ * 10), bottomEdge_+ (zoom_ * 10), topEdge_ - (zoom_ * 10), zNear_, zFar_);
 }

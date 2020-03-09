@@ -29,14 +29,14 @@ void aik::InputManager::processEvents(sf::Event event)
     {
         for(const auto& evnt : inputEvents_[event.type])
         {
-            if(inputMode_ == InputMode::READ)
+            if(inputMode_ == InputMode::READ && event.type != sf::Event::MouseWheelScrolled)
             {
                 if(sf::Keyboard::isKeyPressed(static_cast<sf::Keyboard::Key>(evnt.filter)))
                 {
                     evnt.action();
                 }
             }
-            else if(inputMode_ == InputMode::POLL)
+            else if(inputMode_ == InputMode::POLL || event.type == sf::Event::MouseWheelScrolled)
             {
                 if(event.type == sf::Event::KeyPressed)
                 {
@@ -45,9 +45,6 @@ void aik::InputManager::processEvents(sf::Event event)
                         evnt.action();
                         return;
                     }
-                }
-                else if(event.type == sf::Event::JoystickButtonPressed)
-                {
                 }
                 else if(event.type == sf::Event::MouseWheelScrolled)
                 {

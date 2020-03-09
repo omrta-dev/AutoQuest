@@ -7,7 +7,7 @@
 #include <SFML/Graphics/Shader.hpp>
 #include "InputManager.hpp"
 #include "ResourceManager.hpp"
-#include "Entity.hpp"
+#include "Mesh.hpp"
 #include "glpp/Vertex.hpp"
 #include "glpp/VertexArrayObject.hpp"
 #include "glpp/VertexBufferObject.hpp"

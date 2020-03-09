@@ -13,7 +13,7 @@ add_subdirectory(external_includes/assimp/)
 
 add_executable(${PROJECT_NAME} main.cpp aws/CognitoServer.cpp aws/CognitoServer.hpp aws/CognitoClient.cpp aws/CognitoClient.hpp
         game/Game.cpp game/Game.hpp game/InputManager.cpp game/InputManager.hpp game/ResourceManager.cpp game/ResourceManager.hpp
-        game/Entity.cpp game/Entity.hpp game/glpp/VertexArrayObject.cpp game/glpp/VertexArrayObject.hpp game/glpp/VertexBufferObject.cpp
+        game/Mesh.cpp game/Mesh.hpp game/glpp/VertexArrayObject.cpp game/glpp/VertexArrayObject.hpp game/glpp/VertexBufferObject.cpp
         game/glpp/VertexBufferObject.hpp game/glpp/Vertex.hpp game/glpp/GlmGLSLWrapper.hpp game/Camera.cpp game/Camera.hpp game/InputEvent.hpp
         game/glpp/Texture.cpp game/glpp/Texture.hpp game/Model.cpp game/Model.hpp)
 
