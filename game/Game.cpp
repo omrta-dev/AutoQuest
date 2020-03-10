@@ -9,7 +9,7 @@
 
 constexpr unsigned int model_index = 6;
 
-Game::Game() : window_({800, 900}, "", sf::Style::Default, sf::ContextSettings(0, 0, 4, 4, 3))
+Game::Game() : window_({800, 900}, "", sf::Style::Default, sf::ContextSettings(16, 0, 4, 4, 3))
 {
     gladLoadGL();
     window_.setFramerateLimit(144);
@@ -35,7 +35,7 @@ void Game::initializeResources()
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glViewport(0, 0, 800, 900);
     glEnable(GL_DEPTH_TEST);
-    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+    //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 
     model_.loadModel("assets/models/nanosuit.obj");
     const auto& meshes = model_.getMeshes();
@@ -123,6 +123,18 @@ void Game::renderGraphics()
     vao_.bind();
     ebo_.bind();
 
-    glDrawElements(GL_TRIANGLES, model_.getIndices().size(), GL_UNSIGNED_INT, nullptr);
+    unsigned long offset = 0;
+    unsigned int textureId = 0;
+    for(aik::Mesh  mesh : model_.getMeshes())
+    {
+        for(const auto& texture : mesh.getTextures())
+        {
+            glActiveTexture(GL_TEXTURE0 + textureId);
+            shader_.setUniform("diffuseTexture", (float)texture.id_);
+            glBindTexture(GL_TEXTURE_2D, texture.id_);
+        }
+        glDrawElements(GL_TRIANGLES, mesh.getIndices().size(), GL_UNSIGNED_INT, (void *)offset);
+        offset += (mesh.getIndices().size() * sizeof(unsigned int));
+    }
     window_.display();
 }

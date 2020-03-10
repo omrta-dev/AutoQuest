@@ -7,6 +7,7 @@
 
 namespace aik
 {
+    // Stores information about an event such as what events trigger the filter to be read and then what action to execute
     struct InputEvent
     {
         InputEvent(sf::Event::EventType type, unsigned int code, std::function<void()> function)

@@ -11,6 +11,7 @@ namespace aik
 {
     enum class BufferTarget : GLuint {ARRAY = GL_ARRAY_BUFFER, ELEMENT_BUFFER = GL_ELEMENT_ARRAY_BUFFER};
 
+    // C++ OpenGL VBO + EBO Wrapper
     class VertexBufferObject
     {
     public:

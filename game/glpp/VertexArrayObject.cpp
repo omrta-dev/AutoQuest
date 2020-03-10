@@ -19,6 +19,7 @@ void aik::VertexArrayObject::bind()
     glBindVertexArray(vertexArrayObject_);
 }
 
+// configures the weaving of attributes as we send the vbo data to the GPU
 void aik::VertexArrayObject::configureAttribs()
 {
     glEnableVertexAttribArray(0);

@@ -8,6 +8,8 @@
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+
+// Glm to sfml GLSL wrapper matrices
 namespace aik
 {
     class GlmGLSLWrapper

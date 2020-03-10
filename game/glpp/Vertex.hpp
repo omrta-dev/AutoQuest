@@ -5,8 +5,10 @@
 #pragma once
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
+
 namespace aik
 {
+    // Contains the information for each Vertex in a model
     struct Vertex
     {
         Vertex() = default;

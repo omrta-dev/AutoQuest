@@ -24,6 +24,7 @@ void aik::InputManager::addEvent(aik::InputEvent inputEvent)
 
 void aik::InputManager::processEvents(sf::Event event)
 {
+    // we always process some generic events such as WheelScroll since it cannot be polled for
     auto found = inputEvents_.find(event.type);
     if(found != inputEvents_.end())
     {

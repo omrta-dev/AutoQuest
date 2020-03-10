@@ -15,6 +15,14 @@
 
 namespace aik
 {
+    // This class loads a .obj and stores most of the useful information about the model such as
+    // - Vertices
+    // - Indices
+    // - Textures
+    // - Model Matrix
+    // - and more.
+    // Note that this object should only be a container and have no rendering logic.
+    // TODO: Implement a RenderingManager that accepts a Mesh/Model and renders it.
     class Model
     {
     public:
@@ -39,7 +47,6 @@ namespace aik
         std::string directory_;
         void processNode(aiNode *node, const aiScene *scene);
         Mesh processMesh(aiMesh *mesh, const aiScene *scene);
-        //std::vector<aik::Texture> loadMaterialTextures(aiMaterial* material, aiTextureType textureType, std::string typeName);
 
         bool isModified_;
         glm::vec3 rotation_{};

@@ -7,6 +7,7 @@
 
 namespace aik
 {
+    // C++ OpenGL VAO wrapper
     class VertexArrayObject
     {
     public:
