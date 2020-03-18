@@ -1,9 +1,6 @@
 [submodule "external_includes/glm"]
 	path = external_includes/glm
 	url = https://github.com/g-truc/glm.git
-[submodule "external_includes/OBJ-Loader"]
-	path = external_includes/OBJ-Loader
-	url = https://github.com/Bly7/OBJ-Loader.git
 [submodule "external_includes/assimp"]
 	path = external_includes/assimp
 	url = https://github.com/assimp/assimp.git
