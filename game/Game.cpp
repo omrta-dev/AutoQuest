@@ -30,19 +30,11 @@ void aik::Game::startGame()
 
 void aik::Game::initializeResources()
 {
-
-
-/*
-    uint32_t extensionCount;
-    SDL_Vulkan_GetInstanceExtensions(window, &extensionCount, nullptr);
-    std::vector<const char *> extensionNames(extensionCount);
-    SDL_Vulkan_GetInstanceExtensions(window, &extensionCount, extensionNames.data());
-
-    VkSurfaceKHR surface;
-    if (!SDL_Vulkan_CreateSurface(window, instance, &surface)) {
-        // failed to create a surface!
+    if(!vulkanize_.setup(window_))
+    {
+        std::cout << "Failed to setup vulkan" << std::endl;
+        std::exit(-1);
     }
- */
 }
 
 void aik::Game::gameLoop()

@@ -3,6 +3,7 @@
 //
 #pragma once
 #include <vulkan/vulkan.hpp>
+#include "vk/Vulkanize.hpp"
 #include <SDL2/SDL.h>
 
 namespace aik
@@ -20,5 +21,6 @@ namespace aik
 
         SDL_Window * window_;
         bool isWindowOpen_;
+        aik::Vulkanize vulkanize_;
     };
 }
