@@ -12,7 +12,11 @@ bool aik::Vulkanize::setup(SDL_Window * window)
     if (!createInstance()) return false;
     if (!pickPhysicalDevice()) return false;
     if (!createSurface()) return false;
-    int i = 0;
+    if (!createSwapChain()) return false;
+    if (!createSemaphores()) return false;
+    if (!createCommandBuffer()) return false;
+    if (!recordCommandBuffer()) return false;
+    std::cout << "All Good!" << std::endl;
     return true;
 }
 
@@ -131,6 +135,7 @@ std::pair<uint32_t, uint32_t> aik::Vulkanize::findGraphicsAndPresentQueueFamilyI
             return std::make_pair(static_cast<uint32_t>(i), static_cast<uint32_t>(i));
         }
     }
+    return std::make_pair(-1, -1);
 }
 
 bool aik::Vulkanize::createSwapChain()
@@ -142,7 +147,7 @@ bool aik::Vulkanize::createSwapChain()
     vk::SurfaceCapabilitiesKHR surfaceCapabilities = physicalDevice_.getSurfaceCapabilitiesKHR(surface_.get());
     if (surfaceCapabilities.currentExtent.width == std::numeric_limits<uint32_t>::max())
     {
-        // If the surface size is undefined, the size is set to the size of the images requested.
+        // If the surface size is undefined, the size is set to the size of the window
         int width, height;
         SDL_GetWindowSize(window_, &width, &height);
         swapChainExtent_.width = width;
@@ -168,6 +173,11 @@ bool aik::Vulkanize::createSwapChain()
                                                    swapChainExtent_, 1, vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive, 0, nullptr, preTransform, compositeAlpha, swapchainPresentMode, true, nullptr);
 
     auto queueFamilyIndices = findGraphicsAndPresentQueueFamilyIndex(physicalDevice_, surface_.get());
+
+    // create the two graphics and present queue
+    graphicsQueue_ = device_->getQueue(queueFamilyIndices.first, 0);
+    presentQueue_ = device_->getQueue(queueFamilyIndices.second, 0);
+
     if (queueFamilyIndices.first != queueFamilyIndices.second)
     {
         // If the graphics and present queues are from different queue families, we either have to explicitly transfer ownership of images between
@@ -189,5 +199,99 @@ bool aik::Vulkanize::createSwapChain()
         vk::ImageViewCreateInfo imageViewCreateInfo(vk::ImageViewCreateFlags(), image, vk::ImageViewType::e2D, swapChainImageFormat_, componentMapping, subResourceRange);
         swapChainImageViews_.push_back(device_->createImageViewUnique(imageViewCreateInfo));
     }
+
+    // if we have swapChainImageViews that means that swapchain creation was successful
+    return !swapChainImageViews_.empty();
+}
+
+bool aik::Vulkanize::createGraphicsPipeline()
+{
     return false;
+}
+
+bool aik::Vulkanize::createSemaphores()
+{
+    imageAvailableSempahore_ = device_->createSemaphoreUnique(vk::SemaphoreCreateInfo(), nullptr);
+    renderingFinishedSempahore_ = device_->createSemaphoreUnique(vk::SemaphoreCreateInfo(), nullptr);
+    return true;
+}
+
+bool aik::Vulkanize::createCommandBuffer()
+{
+    commandBuffers.resize(swapChainImages_.size());
+    uint32_t graphicsQueueIndex = findGraphicsQueueFamilyIndex(physicalDevice_.getQueueFamilyProperties());
+    commandPool_ = device_->createCommandPoolUnique(vk::CommandPoolCreateInfo(vk::CommandPoolCreateFlags(), graphicsQueueIndex));
+
+    commandBuffers = device_->allocateCommandBuffersUnique(vk::CommandBufferAllocateInfo(commandPool_.get(), vk::CommandBufferLevel::ePrimary, static_cast<uint32_t>(swapChainImages_.size())));
+
+    return true;
+}
+
+bool aik::Vulkanize::recordCommandBuffer()
+{
+    auto presentQueueIndex = findGraphicsAndPresentQueueFamilyIndex(physicalDevice_, surface_.get()).first;
+    std::cout << presentQueueIndex << "," << findGraphicsAndPresentQueueFamilyIndex(physicalDevice_, surface_.get()).second << std::endl;
+    vk::ClearColorValue clearColorValue = {std::array<float, 4>{.2f, .4f, .6f, 1.0f}};
+    vk::ImageSubresourceRange imageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1);
+    vk::CommandBufferBeginInfo commandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eSimultaneousUse);
+    for(uint i = 0; i < swapChainImages_.size(); i++)
+    {
+        // setup memory barriers for clear command
+        vk::ImageMemoryBarrier presentToClearBarrier;
+        presentToClearBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryRead;
+        presentToClearBarrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
+        presentToClearBarrier.oldLayout = vk::ImageLayout::eUndefined;
+        presentToClearBarrier.newLayout = vk::ImageLayout ::eTransferDstOptimal;
+        presentToClearBarrier.srcQueueFamilyIndex = presentQueueIndex;
+        presentToClearBarrier.dstQueueFamilyIndex = presentQueueIndex;
+        presentToClearBarrier.image = swapChainImages_[i];
+        presentToClearBarrier.subresourceRange = imageSubresourceRange;
+
+        // change layout to be optimal for presenting
+        vk::ImageMemoryBarrier clearToPresentBarrier;
+        clearToPresentBarrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+        clearToPresentBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead;
+        clearToPresentBarrier.oldLayout = vk::ImageLayout ::eTransferDstOptimal;
+        clearToPresentBarrier.newLayout = vk::ImageLayout ::ePresentSrcKHR;
+        clearToPresentBarrier.srcQueueFamilyIndex = presentQueueIndex;
+        clearToPresentBarrier.dstQueueFamilyIndex = presentQueueIndex;
+        clearToPresentBarrier.image = swapChainImages_[i];
+        clearToPresentBarrier.subresourceRange = imageSubresourceRange;
+
+        commandBuffers[i]->begin(&commandBufferBeginInfo);
+        commandBuffers[i]->pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), {}, {}, presentToClearBarrier);
+        commandBuffers[i]->clearColorImage(swapChainImages_[i], vk::ImageLayout::eGeneral, clearColorValue, imageSubresourceRange);
+        commandBuffers[i]->pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eBottomOfPipe, vk::DependencyFlags(), {}, {}, clearToPresentBarrier);
+        commandBuffers[i]->end();
+    }
+
+    return true;
+}
+
+bool aik::Vulkanize::renderScene()
+{
+    auto imageAcquireResults = device_->acquireNextImageKHR(swapChain_.get(), UINT64_MAX, imageAvailableSempahore_.get(), nullptr);
+    vk::SubmitInfo submitInfo;
+    submitInfo.waitSemaphoreCount = 1;
+    submitInfo.pWaitSemaphores = &imageAvailableSempahore_.get();
+    submitInfo.signalSemaphoreCount = 1;
+    submitInfo.pSignalSemaphores = &renderingFinishedSempahore_.get();
+    vk::PipelineStageFlags pipelineStageFlags(vk::PipelineStageFlagBits::eTransfer);
+    submitInfo.setPWaitDstStageMask(&pipelineStageFlags);
+
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &commandBuffers[imageAcquireResults.value].get();
+
+    graphicsQueue_.submit(1, &submitInfo, nullptr);
+
+    vk::PresentInfoKHR presentInfoKhr;
+    presentInfoKhr.swapchainCount = 1;
+    presentInfoKhr.pSwapchains = &swapChain_.get();
+    presentInfoKhr.pImageIndices = &imageAcquireResults.value;
+    presentInfoKhr.waitSemaphoreCount = 1;
+    presentInfoKhr.pWaitSemaphores = &renderingFinishedSempahore_.get();
+
+    graphicsQueue_.presentKHR(presentInfoKhr);
+
+    return true;
 }

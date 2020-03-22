@@ -11,6 +11,7 @@ namespace aik
     {
     public:
         bool setup(SDL_Window * window);
+        bool renderScene();
     private:
         bool createInstance();
         const vk::Instance& getInstance() {return instance_.get();}
@@ -21,6 +22,10 @@ namespace aik
         uint32_t findGraphicsQueueFamilyIndex(std::vector<vk::QueueFamilyProperties> const& queueFamilyProperties);
         std::pair<uint32_t, uint32_t> findGraphicsAndPresentQueueFamilyIndex(vk::PhysicalDevice physicalDevice, const vk::SurfaceKHR& surface);
         bool createSwapChain(); // looks like this is what is considered a "buffer as part of the double buffer in openGL"
+        bool createGraphicsPipeline();
+        bool createSemaphores();
+        bool createCommandBuffer();
+        bool recordCommandBuffer();
 
         SDL_Window * window_;
         vk::UniqueInstance instance_;
@@ -34,5 +39,9 @@ namespace aik
         std::vector<vk::UniqueImageView> swapChainImageViews_;
         vk::Format swapChainImageFormat_;
         vk::Extent2D swapChainExtent_;
+        vk::UniqueCommandPool commandPool_;
+        std::vector<vk::UniqueCommandBuffer> commandBuffers;
+        vk::UniqueSemaphore imageAvailableSempahore_;
+        vk::UniqueSemaphore renderingFinishedSempahore_;
     };
 }

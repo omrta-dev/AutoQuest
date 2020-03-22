@@ -68,5 +68,5 @@ void aik::Game::update()
 
 void aik::Game::renderGraphics()
 {
-    SDL_UpdateWindowSurface(window_);
+    vulkanize_.renderScene();
 }
