@@ -1,9 +1,10 @@
-#version 330 core
+#version 450
+#extension GL_ARB_separate_shader_objects : enable
 
-in vec2 inputUv;
+layout(location = 0) in vec3 fragColor;
 
-uniform sampler2D diffuseTexture;
+layout(location = 0) out vec4 outColor;
 
 void main() {
-    gl_FragColor = texture(diffuseTexture, inputUv);
+    outColor = vec4(fragColor, 1.0);
 }

@@ -64,7 +64,7 @@ bool aik::Vulkanize::hasLayer(const std::vector<vk::LayerProperties> &layerPrope
 {
     for(const auto& layerProperty : layerProperties)
     {
-        if(layerProperty.layerName == layerName)
+        if(layerProperty.layerName.data() == layerName)
             return true;
     }
     return false;
@@ -162,6 +162,14 @@ bool aik::Vulkanize::createSwapChain()
     // The FIFO present mode is guaranteed by the spec to be supported
     vk::PresentModeKHR swapchainPresentMode = vk::PresentModeKHR::eFifo;
 
+    // query for triple buffer support
+    std::vector<vk::PresentModeKHR> presentModes = physicalDevice_.getSurfacePresentModesKHR(surface_.get());
+    for(const auto& presentMode : presentModes)
+    {
+        if(presentMode == vk::PresentModeKHR::eMailbox)
+            swapchainPresentMode = presentMode;
+    }
+
     vk::SurfaceTransformFlagBitsKHR preTransform = (surfaceCapabilities.supportedTransforms & vk::SurfaceTransformFlagBitsKHR::eIdentity) ? vk::SurfaceTransformFlagBitsKHR::eIdentity : surfaceCapabilities.currentTransform;
 
     vk::CompositeAlphaFlagBitsKHR compositeAlpha =
@@ -221,16 +229,13 @@ bool aik::Vulkanize::createCommandBuffer()
     commandBuffers.resize(swapChainImages_.size());
     uint32_t graphicsQueueIndex = findGraphicsQueueFamilyIndex(physicalDevice_.getQueueFamilyProperties());
     commandPool_ = device_->createCommandPoolUnique(vk::CommandPoolCreateInfo(vk::CommandPoolCreateFlags(), graphicsQueueIndex));
-
     commandBuffers = device_->allocateCommandBuffersUnique(vk::CommandBufferAllocateInfo(commandPool_.get(), vk::CommandBufferLevel::ePrimary, static_cast<uint32_t>(swapChainImages_.size())));
-
     return true;
 }
 
 bool aik::Vulkanize::recordCommandBuffer()
 {
     auto presentQueueIndex = findGraphicsAndPresentQueueFamilyIndex(physicalDevice_, surface_.get()).first;
-    std::cout << presentQueueIndex << "," << findGraphicsAndPresentQueueFamilyIndex(physicalDevice_, surface_.get()).second << std::endl;
     vk::ClearColorValue clearColorValue = {std::array<float, 4>{.2f, .4f, .6f, 1.0f}};
     vk::ImageSubresourceRange imageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1);
     vk::CommandBufferBeginInfo commandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eSimultaneousUse);
