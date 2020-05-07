@@ -4,7 +4,7 @@ project(AutoQuest)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(${PROJECT_NAME} main.cpp game/Game.cpp game/Game.hpp game/vk/Vulkanize.cpp game/vk/Vulkanize.hpp)
+add_executable(${PROJECT_NAME} main.cpp game/Game.cpp game/Game.hpp game/vk/Vulkanize.cpp game/vk/Vulkanize.hpp game/vk/Shaders.cpp game/vk/Shaders.hpp)
 
 find_package(SDL2 REQUIRED)
 find_package(Vulkan REQUIRED)
