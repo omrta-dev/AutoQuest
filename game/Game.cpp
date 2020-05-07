@@ -45,6 +45,7 @@ void aik::Game::gameLoop()
         update();
         renderGraphics();
     }
+    vulkanize_.idleDevice();
 }
 
 void aik::Game::processInput()

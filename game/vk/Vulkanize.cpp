@@ -6,6 +6,8 @@
 #include <SDL2/SDL_vulkan.h>
 #include <iostream>
 
+#include "Shaders.hpp"
+
 bool aik::Vulkanize::setup(SDL_Window * window)
 {
     window_ = window;
@@ -14,8 +16,12 @@ bool aik::Vulkanize::setup(SDL_Window * window)
     if (!createSurface()) return false;
     if (!createSwapChain()) return false;
     if (!createSemaphores()) return false;
+    if (!createRenderPass()) return false;
+    if (!createGraphicsPipeline()) return false;
+    if (!createFrameBuffers()) return false;
     if (!createCommandBuffer()) return false;
     if (!recordCommandBuffer()) return false;
+
     std::cout << "All Good!" << std::endl;
     return true;
 }
@@ -166,8 +172,11 @@ bool aik::Vulkanize::createSwapChain()
     std::vector<vk::PresentModeKHR> presentModes = physicalDevice_.getSurfacePresentModesKHR(surface_.get());
     for(const auto& presentMode : presentModes)
     {
-        if(presentMode == vk::PresentModeKHR::eMailbox)
+        if (presentMode == vk::PresentModeKHR::eMailbox)
+        {
             swapchainPresentMode = presentMode;
+            break;
+        }
     }
 
     vk::SurfaceTransformFlagBitsKHR preTransform = (surfaceCapabilities.supportedTransforms & vk::SurfaceTransformFlagBitsKHR::eIdentity) ? vk::SurfaceTransformFlagBitsKHR::eIdentity : surfaceCapabilities.currentTransform;
@@ -212,9 +221,67 @@ bool aik::Vulkanize::createSwapChain()
     return !swapChainImageViews_.empty();
 }
 
+bool aik::Vulkanize::createRenderPass()
+{
+    vk::AttachmentDescription colorAttachment = {{}, swapChainImageFormat_, vk::SampleCountFlagBits::e1, vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore,
+                                                 vk::AttachmentLoadOp::eDontCare, vk::AttachmentStoreOp::eDontCare, vk::ImageLayout::eUndefined, vk::ImageLayout::ePresentSrcKHR};
+    vk::AttachmentReference colorAttachmentRef = {0, vk::ImageLayout::eColorAttachmentOptimal};
+    vk::SubpassDescription subpass = {{}, {}, {}, {}, 1, &colorAttachmentRef};
+    vk::SubpassDependency dependency = {VK_SUBPASS_EXTERNAL, 0, vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::PipelineStageFlagBits::eColorAttachmentOutput, {}, vk::AccessFlagBits::eColorAttachmentWrite};
+    vk::RenderPassCreateInfo renderPassCreateInfo = {{}, 1, &colorAttachment, 1, &subpass, 1, &dependency};
+    renderPass_ = device_->createRenderPassUnique(renderPassCreateInfo);
+    if(!renderPass_)
+    {
+        std::cout << "failed to create render pass!" << std::endl;
+        return false;
+    }
+    return true;
+}
+
 bool aik::Vulkanize::createGraphicsPipeline()
 {
-    return false;
+    auto vertexShaderCode = aik::Shaders::loadShader("assets/shaders/vert.vert.spv");
+    auto fragmentShaderCode = aik::Shaders::loadShader("assets/shaders/frag.frag.spv");
+    auto vertexShaderModule = aik::Shaders::createShaderModule(device_.get(), vertexShaderCode);
+    auto fragmentShaderModule = aik::Shaders::createShaderModule(device_.get(), fragmentShaderCode);
+    vk::PipelineShaderStageCreateInfo vertexShader({}, vk::ShaderStageFlagBits::eVertex, vertexShaderModule.get(), "main");
+    vk::PipelineShaderStageCreateInfo fragmentShader({}, vk::ShaderStageFlagBits::eFragment, fragmentShaderModule.get(), "main");
+    vk::PipelineShaderStageCreateInfo shaderStages[] = {vertexShader, fragmentShader};
+
+    vk::PipelineVertexInputStateCreateInfo vertexInputStateCreateInfo = {{}, 0, nullptr, 0, nullptr};
+    vk::PipelineInputAssemblyStateCreateInfo assemblyStateCreateInfo = {{}, vk::PrimitiveTopology::eTriangleList, false};
+    vk::Viewport viewport = {0.0f, 0.0f, static_cast<float>(swapChainExtent_.width), static_cast<float>(swapChainExtent_.height), 0.0f, 1.0f};
+    vk::Rect2D scissor = {{0, 0}, swapChainExtent_};
+    vk::PipelineViewportStateCreateInfo viewportStateCreateInfo = {{}, 1, &viewport, 1, &scissor};
+    vk::PipelineRasterizationStateCreateInfo rasterizationStateCreateInfo = {{}, false, false, vk::PolygonMode::eFill, vk::CullModeFlagBits::eBack, vk::FrontFace::eClockwise};
+    vk::PipelineMultisampleStateCreateInfo multisampleStateCreateInfo = {{}, vk::SampleCountFlagBits::e1};
+    vk::PipelineColorBlendAttachmentState colorBlendAttachmentState = {{}, vk::BlendFactor::eSrcAlpha, vk::BlendFactor::eOneMinusSrc1Alpha, vk::BlendOp::eAdd,
+                                                                       vk::BlendFactor::eOne, vk::BlendFactor::eZero, vk::BlendOp::eAdd,
+                                                                       vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA};
+    vk::PipelineColorBlendStateCreateInfo colorBlendStateCreateInfo = {{}, false, vk::LogicOp::eCopy, 1, &colorBlendAttachmentState, {0.0f, 0.0f, 0.0f, 0.0f} };
+    std::vector<vk::DynamicState> dynamicStates = {vk::DynamicState::eViewport, vk::DynamicState::eLineWidth};
+    vk::PipelineDynamicStateCreateInfo dynamicStateCreateInfo = {{}, static_cast<uint32_t>(dynamicStates.size()), dynamicStates.data()};
+    vk::PipelineLayoutCreateInfo layoutCreateInfo = {{}, 0, nullptr, 0, nullptr};
+    pipelineLayout_ = device_->createPipelineLayoutUnique(layoutCreateInfo);
+
+    // create the actual pipeline with all the information from the renderpass and pipeline stages above
+    vk::GraphicsPipelineCreateInfo graphicsPipelineCreateInfo = {{}, 2, shaderStages, &vertexInputStateCreateInfo, &assemblyStateCreateInfo, {},
+                                                                 &viewportStateCreateInfo, &rasterizationStateCreateInfo, &multisampleStateCreateInfo, {}, &colorBlendStateCreateInfo, {},
+                                                                 pipelineLayout_.get(), renderPass_.get(), {}, {}, {}};
+    pipeline_ = device_->createGraphicsPipelineUnique(nullptr, graphicsPipelineCreateInfo);
+    return true;
+}
+
+bool aik::Vulkanize::createFrameBuffers()
+{
+    swapChainFramebuffers_.resize(swapChainImageViews_.size());
+    for(size_t i = 0; i < swapChainImageViews_.size(); i++)
+    {
+        vk::ImageView attachments[] = {swapChainImageViews_[i].get()};
+        vk::FramebufferCreateInfo framebufferCreateInfo = {{}, renderPass_.get(), 1, attachments, swapChainExtent_.width, swapChainExtent_.height, 1};
+        swapChainFramebuffers_[i] = device_->createFramebufferUnique(framebufferCreateInfo);
+    }
+    return true;
 }
 
 bool aik::Vulkanize::createSemaphores()
@@ -226,48 +293,28 @@ bool aik::Vulkanize::createSemaphores()
 
 bool aik::Vulkanize::createCommandBuffer()
 {
-    commandBuffers.resize(swapChainImages_.size());
+    commandBuffers_.resize(swapChainImages_.size());
     uint32_t graphicsQueueIndex = findGraphicsQueueFamilyIndex(physicalDevice_.getQueueFamilyProperties());
     commandPool_ = device_->createCommandPoolUnique(vk::CommandPoolCreateInfo(vk::CommandPoolCreateFlags(), graphicsQueueIndex));
-    commandBuffers = device_->allocateCommandBuffersUnique(vk::CommandBufferAllocateInfo(commandPool_.get(), vk::CommandBufferLevel::ePrimary, static_cast<uint32_t>(swapChainImages_.size())));
+    commandBuffers_ = device_->allocateCommandBuffersUnique(vk::CommandBufferAllocateInfo(commandPool_.get(), vk::CommandBufferLevel::ePrimary, static_cast<uint32_t>(swapChainImages_.size())));
     return true;
 }
 
 bool aik::Vulkanize::recordCommandBuffer()
 {
-    auto presentQueueIndex = findGraphicsAndPresentQueueFamilyIndex(physicalDevice_, surface_.get()).first;
     vk::ClearColorValue clearColorValue = {std::array<float, 4>{.2f, .4f, .6f, 1.0f}};
-    vk::ImageSubresourceRange imageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1);
-    vk::CommandBufferBeginInfo commandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eSimultaneousUse);
+    vk::ClearValue clearValue = {clearColorValue};
+    vk::CommandBufferBeginInfo commandBufferBeginInfo;
     for(uint i = 0; i < swapChainImages_.size(); i++)
     {
-        // setup memory barriers for clear command
-        vk::ImageMemoryBarrier presentToClearBarrier;
-        presentToClearBarrier.srcAccessMask = vk::AccessFlagBits::eMemoryRead;
-        presentToClearBarrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
-        presentToClearBarrier.oldLayout = vk::ImageLayout::eUndefined;
-        presentToClearBarrier.newLayout = vk::ImageLayout ::eTransferDstOptimal;
-        presentToClearBarrier.srcQueueFamilyIndex = presentQueueIndex;
-        presentToClearBarrier.dstQueueFamilyIndex = presentQueueIndex;
-        presentToClearBarrier.image = swapChainImages_[i];
-        presentToClearBarrier.subresourceRange = imageSubresourceRange;
+        vk::RenderPassBeginInfo renderPassBeginInfo = {renderPass_.get(), swapChainFramebuffers_[i].get(), {{0, 0}, swapChainExtent_}, 1, &clearValue};
 
-        // change layout to be optimal for presenting
-        vk::ImageMemoryBarrier clearToPresentBarrier;
-        clearToPresentBarrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
-        clearToPresentBarrier.dstAccessMask = vk::AccessFlagBits::eMemoryRead;
-        clearToPresentBarrier.oldLayout = vk::ImageLayout ::eTransferDstOptimal;
-        clearToPresentBarrier.newLayout = vk::ImageLayout ::ePresentSrcKHR;
-        clearToPresentBarrier.srcQueueFamilyIndex = presentQueueIndex;
-        clearToPresentBarrier.dstQueueFamilyIndex = presentQueueIndex;
-        clearToPresentBarrier.image = swapChainImages_[i];
-        clearToPresentBarrier.subresourceRange = imageSubresourceRange;
-
-        commandBuffers[i]->begin(&commandBufferBeginInfo);
-        commandBuffers[i]->pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer, vk::DependencyFlags(), {}, {}, presentToClearBarrier);
-        commandBuffers[i]->clearColorImage(swapChainImages_[i], vk::ImageLayout::eGeneral, clearColorValue, imageSubresourceRange);
-        commandBuffers[i]->pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eBottomOfPipe, vk::DependencyFlags(), {}, {}, clearToPresentBarrier);
-        commandBuffers[i]->end();
+        commandBuffers_[i]->begin(&commandBufferBeginInfo);
+        commandBuffers_[i]->beginRenderPass(renderPassBeginInfo, vk::SubpassContents::eInline);
+        commandBuffers_[i]->bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline_.get());
+        commandBuffers_[i]->draw(3, 1, 0, 0);
+        commandBuffers_[i]->endRenderPass();
+        commandBuffers_[i]->end();
     }
 
     return true;
@@ -285,9 +332,9 @@ bool aik::Vulkanize::renderScene()
     submitInfo.setPWaitDstStageMask(&pipelineStageFlags);
 
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &commandBuffers[imageAcquireResults.value].get();
+    submitInfo.pCommandBuffers = &commandBuffers_[imageAcquireResults.value].get();
 
-    graphicsQueue_.submit(1, &submitInfo, nullptr);
+    presentQueue_.submit(1, &submitInfo, nullptr);
 
     vk::PresentInfoKHR presentInfoKhr;
     presentInfoKhr.swapchainCount = 1;
@@ -296,7 +343,12 @@ bool aik::Vulkanize::renderScene()
     presentInfoKhr.waitSemaphoreCount = 1;
     presentInfoKhr.pWaitSemaphores = &renderingFinishedSempahore_.get();
 
-    graphicsQueue_.presentKHR(presentInfoKhr);
+    presentQueue_.presentKHR(presentInfoKhr);
 
     return true;
+}
+
+void aik::Vulkanize::idleDevice()
+{
+    device_->waitIdle();
 }
