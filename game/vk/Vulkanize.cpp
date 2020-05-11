@@ -46,8 +46,8 @@ bool aik::Vulkanize::createInstance()
         std::cout << "DEBUG MODE: True" << std::endl;
         std::vector<const char *> layerPropertyNames;
         std::vector<vk::LayerProperties> layerProperties = vk::enumerateInstanceLayerProperties();
-        if(hasLayer(layerProperties, "VK_LAYER_LUNARG_api_dump"))
-            layerPropertyNames.push_back("VK_LAYER_LUNARG_api_dump");
+        //if(hasLayer(layerProperties, "VK_LAYER_LUNARG_api_dump"))
+        //    layerPropertyNames.push_back("VK_LAYER_LUNARG_api_dump");
         if(hasLayer(layerProperties, "VK_LAYER_KHRONOS_validation"))
             layerPropertyNames.push_back("VK_LAYER_KHRONOS_validation");
         if(hasLayer(layerProperties, "VK_LAYER_LUNARG_standard_validation"))
@@ -253,9 +253,10 @@ bool aik::Vulkanize::createGraphicsPipeline()
     vk::Viewport viewport = {0.0f, 0.0f, static_cast<float>(swapChainExtent_.width), static_cast<float>(swapChainExtent_.height), 0.0f, 1.0f};
     vk::Rect2D scissor = {{0, 0}, swapChainExtent_};
     vk::PipelineViewportStateCreateInfo viewportStateCreateInfo = {{}, 1, &viewport, 1, &scissor};
-    vk::PipelineRasterizationStateCreateInfo rasterizationStateCreateInfo = {{}, false, false, vk::PolygonMode::eFill, vk::CullModeFlagBits::eBack, vk::FrontFace::eClockwise};
+    vk::PipelineRasterizationStateCreateInfo rasterizationStateCreateInfo = {{}, false, false, vk::PolygonMode::eFill, vk::CullModeFlagBits::eBack, vk::FrontFace::eClockwise,
+                                                                             {},{},{},{},1.0f};
     vk::PipelineMultisampleStateCreateInfo multisampleStateCreateInfo = {{}, vk::SampleCountFlagBits::e1};
-    vk::PipelineColorBlendAttachmentState colorBlendAttachmentState = {{}, vk::BlendFactor::eSrcAlpha, vk::BlendFactor::eOneMinusSrc1Alpha, vk::BlendOp::eAdd,
+    vk::PipelineColorBlendAttachmentState colorBlendAttachmentState = {{}, vk::BlendFactor::eSrcAlpha, vk::BlendFactor::eSrcAlpha, vk::BlendOp::eAdd,
                                                                        vk::BlendFactor::eOne, vk::BlendFactor::eZero, vk::BlendOp::eAdd,
                                                                        vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA};
     vk::PipelineColorBlendStateCreateInfo colorBlendStateCreateInfo = {{}, false, vk::LogicOp::eCopy, 1, &colorBlendAttachmentState, {0.0f, 0.0f, 0.0f, 0.0f} };
