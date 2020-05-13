@@ -16,17 +16,17 @@ namespace aik
     private:
         bool createInstance();
         const vk::Instance& getInstance() {return instance_.get();}
-        bool hasLayer(const std::vector<vk::LayerProperties>& layerProperties, std::string layerName);
+        static bool hasLayer(const std::vector<vk::LayerProperties>& layerProperties, const std::string& layerName);
         bool pickPhysicalDevice(unsigned short deviceIndex = 0);
         bool createDevice(size_t graphicsQueueIndex);
         bool createSurface();
-        uint32_t findGraphicsQueueFamilyIndex(std::vector<vk::QueueFamilyProperties> const& queueFamilyProperties);
-        std::pair<uint32_t, uint32_t> findGraphicsAndPresentQueueFamilyIndex(vk::PhysicalDevice physicalDevice, const vk::SurfaceKHR& surface);
+        static uint32_t findGraphicsQueueFamilyIndex(std::vector<vk::QueueFamilyProperties> const& queueFamilyProperties);
+        static std::pair<uint32_t, uint32_t> findGraphicsAndPresentQueueFamilyIndex(vk::PhysicalDevice physicalDevice, const vk::SurfaceKHR& surface);
         bool createSwapChain(); // looks like this is what is considered a "buffer as part of the double buffer in openGL"
         bool createRenderPass();
         bool createGraphicsPipeline();
         bool createFrameBuffers();
-        bool createSemaphores();
+        bool createSyncObjects();
         bool createCommandBuffer();
         bool recordCommandBuffer();
 
@@ -44,11 +44,14 @@ namespace aik
         vk::Extent2D swapChainExtent_;
         vk::UniqueCommandPool commandPool_;
         std::vector<vk::UniqueCommandBuffer> commandBuffers_;
-        vk::UniqueSemaphore imageAvailableSempahore_;
-        vk::UniqueSemaphore renderingFinishedSempahore_;
+        std::vector<vk::UniqueSemaphore> imageAvailableSempahores_;
+        std::vector<vk::UniqueSemaphore> renderingFinishedSempahores_;
+        std::vector<vk::UniqueFence> inFlightFences_;
         vk::UniqueRenderPass renderPass_;
         vk::UniquePipelineLayout pipelineLayout_;
         vk::UniquePipeline pipeline_;
         std::vector<vk::UniqueFramebuffer> swapChainFramebuffers_;
+        const int maxFramesInFlight_ = 2;
+        size_t currentFrame_ = 0;
     };
 }

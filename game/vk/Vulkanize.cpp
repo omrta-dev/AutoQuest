@@ -15,7 +15,7 @@ bool aik::Vulkanize::setup(SDL_Window * window)
     if (!pickPhysicalDevice()) return false;
     if (!createSurface()) return false;
     if (!createSwapChain()) return false;
-    if (!createSemaphores()) return false;
+    if (!createSyncObjects()) return false;
     if (!createRenderPass()) return false;
     if (!createGraphicsPipeline()) return false;
     if (!createFrameBuffers()) return false;
@@ -28,7 +28,7 @@ bool aik::Vulkanize::setup(SDL_Window * window)
 
 bool aik::Vulkanize::createInstance()
 {
-    vk::ApplicationInfo applicationInfo("AutoQuest", 1, "All I Know", 1, VK_API_VERSION_1_1);
+    vk::ApplicationInfo applicationInfo("AutoQuest", 1, "All I Know", 1, VK_API_VERSION_1_2);
 
     vk::InstanceCreateInfo instanceCreateInfo({}, &applicationInfo);
 
@@ -66,7 +66,7 @@ bool aik::Vulkanize::createInstance()
     return false;
 }
 
-bool aik::Vulkanize::hasLayer(const std::vector<vk::LayerProperties> &layerProperties, std::string layerName)
+bool aik::Vulkanize::hasLayer(const std::vector<vk::LayerProperties> &layerProperties, const std::string& layerName)
 {
     for(const auto& layerProperty : layerProperties)
     {
@@ -285,10 +285,17 @@ bool aik::Vulkanize::createFrameBuffers()
     return true;
 }
 
-bool aik::Vulkanize::createSemaphores()
+bool aik::Vulkanize::createSyncObjects()
 {
-    imageAvailableSempahore_ = device_->createSemaphoreUnique(vk::SemaphoreCreateInfo(), nullptr);
-    renderingFinishedSempahore_ = device_->createSemaphoreUnique(vk::SemaphoreCreateInfo(), nullptr);
+    imageAvailableSempahores_.resize(maxFramesInFlight_);
+    renderingFinishedSempahores_.resize(maxFramesInFlight_);
+    inFlightFences_.resize(maxFramesInFlight_);
+    for(size_t i = 0; i < maxFramesInFlight_; i++)
+    {
+        imageAvailableSempahores_[i] = device_->createSemaphoreUnique({}, nullptr);
+        renderingFinishedSempahores_[i] = device_->createSemaphoreUnique({}, nullptr);
+        inFlightFences_[i] = device_->createFenceUnique(vk::FenceCreateInfo(vk::FenceCreateFlagBits::eSignaled), nullptr);
+    }
     return true;
 }
 
@@ -323,29 +330,32 @@ bool aik::Vulkanize::recordCommandBuffer()
 
 bool aik::Vulkanize::renderScene()
 {
-    auto imageAcquireResults = device_->acquireNextImageKHR(swapChain_.get(), UINT64_MAX, imageAvailableSempahore_.get(), nullptr);
+    device_->waitForFences(*inFlightFences_[currentFrame_], true, UINT64_MAX);
+    device_->resetFences(*inFlightFences_[currentFrame_]);
+    auto imageAcquireResults = device_->acquireNextImageKHR(swapChain_.get(), UINT64_MAX, imageAvailableSempahores_[currentFrame_].get(), nullptr);
     vk::SubmitInfo submitInfo;
     submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = &imageAvailableSempahore_.get();
+    submitInfo.pWaitSemaphores = &imageAvailableSempahores_[currentFrame_].get();
     submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = &renderingFinishedSempahore_.get();
+    submitInfo.pSignalSemaphores = &renderingFinishedSempahores_[currentFrame_].get();
     vk::PipelineStageFlags pipelineStageFlags(vk::PipelineStageFlagBits::eTransfer);
     submitInfo.setPWaitDstStageMask(&pipelineStageFlags);
 
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &commandBuffers_[imageAcquireResults.value].get();
 
-    presentQueue_.submit(1, &submitInfo, nullptr);
+    presentQueue_.submit(1, &submitInfo, inFlightFences_[currentFrame_].get());
 
     vk::PresentInfoKHR presentInfoKhr;
     presentInfoKhr.swapchainCount = 1;
     presentInfoKhr.pSwapchains = &swapChain_.get();
     presentInfoKhr.pImageIndices = &imageAcquireResults.value;
     presentInfoKhr.waitSemaphoreCount = 1;
-    presentInfoKhr.pWaitSemaphores = &renderingFinishedSempahore_.get();
+    presentInfoKhr.pWaitSemaphores = &renderingFinishedSempahores_[currentFrame_].get();
 
     presentQueue_.presentKHR(presentInfoKhr);
 
+    currentFrame_ = (currentFrame_ + 1) % maxFramesInFlight_;
     return true;
 }
 
