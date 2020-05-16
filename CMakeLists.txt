@@ -10,6 +10,7 @@ find_package(AWSSDK REQUIRED COMPONENTS core cognito-identity cognito-idp)
 include_directories(external_includes/glm/)
 add_subdirectory(external_includes/glad/)
 add_subdirectory(external_includes/assimp/)
+add_subdirectory(external_includes/freetype2/)
 
 add_executable(${PROJECT_NAME} main.cpp aws/CognitoServer.cpp aws/CognitoServer.hpp aws/CognitoClient.cpp aws/CognitoClient.hpp
         game/Game.cpp game/Game.hpp game/InputManager.cpp game/InputManager.hpp game/ResourceManager.cpp game/ResourceManager.hpp
@@ -25,3 +26,5 @@ target_link_libraries(${PROJECT_NAME} PRIVATE glad)
 target_link_libraries(${PROJECT_NAME} PRIVATE ${AWSSDK_LINK_LIBRARIES})
 # ASSIMP
 target_link_libraries(${PROJECT_NAME} PRIVATE assimp)
+# FreeType
+target_link_libraries(${PROJECT_NAME} PRIVATE freetype2)

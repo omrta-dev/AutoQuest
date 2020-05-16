@@ -7,3 +7,6 @@
 [submodule "external_includes/assimp"]
 	path = external_includes/assimp
 	url = https://github.com/assimp/assimp.git
+[submodule "external_includes/freetype2"]
+	path = external_includes/freetype2
+	url = https://github.com/aseprite/freetype2.git
