@@ -34,6 +34,6 @@ private:
     aik::VertexBufferObject vbo_;
     aik::VertexBufferObject ebo_;
     aik::Camera camera_;
-    aik::Model model_;
+    aik::Model model_, model_2;
 };
 

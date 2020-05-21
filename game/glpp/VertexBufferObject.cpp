@@ -21,7 +21,7 @@ void aik::VertexBufferObject::createVertexBufferObject(aik::BufferTarget bufferT
 
 void aik::VertexBufferObject::allocate(unsigned int size)
 {
-    glBufferData(static_cast<GLuint>(bufferTarget_), size, nullptr, GL_STATIC_DRAW);
+    glBufferData(static_cast<GLuint>(bufferTarget_), size, nullptr, GL_DYNAMIC_DRAW);
     maxSize_ = size;
 }
 
@@ -40,16 +40,41 @@ void aik::VertexBufferObject::setData(const std::vector<unsigned int> &data)
     glBufferData(static_cast<GLuint>(bufferTarget_), data.size() * sizeof(unsigned int), data.data(), GL_STATIC_DRAW);
 }
 
-void aik::VertexBufferObject::addData(GLintptr offset, const std::vector<aik::Vertex> &data)
+void aik::VertexBufferObject::addData(const std::vector<aik::Vertex> &data, GLintptr offset)
 {
-    glBufferSubData(static_cast<GLuint>(bufferTarget_), currentSize_, data.size() * sizeof(data[0]), data.data());
+    if (offset == UINT64_MAX)
+    {
+        glBufferSubData(static_cast<GLuint>(bufferTarget_), offset, data.size() * sizeof(data[0]), data.data());
+    }
+    else
+    {
+        glBufferSubData(static_cast<GLuint>(bufferTarget_), currentSize_, data.size() * sizeof(data[0]), data.data());
+    }
     currentSize_ += data.size() * sizeof(data[0]);
-    std::cout << "CurrentSize for vbo: " << currentSize_ << std::endl;
 }
 
-void aik::VertexBufferObject::addData(GLintptr offset, const std::vector<unsigned int> &data)
+void aik::VertexBufferObject::addData(const std::vector<unsigned int> &data, GLintptr offset)
 {
-    glBufferSubData(static_cast<GLuint>(bufferTarget_), currentSize_, data.size() * sizeof(data[0]), data.data());
+    if (offset == UINT64_MAX)
+    {
+        glBufferSubData(static_cast<GLuint>(bufferTarget_), offset, data.size() * sizeof(data[0]), data.data());
+    }
+    else
+    {
+        glBufferSubData(static_cast<GLuint>(bufferTarget_), currentSize_, data.size() * sizeof(data[0]), data.data());
+    }
     currentSize_ += data.size() * sizeof(data[0]);
-    std::cout << "CurrentSize for ebo: " << currentSize_ << std::endl;
+}
+
+void aik::VertexBufferObject::addData(const std::vector<glm::vec4> &data, GLintptr offset)
+{
+    if (offset == UINT64_MAX)
+    {
+        glBufferSubData(static_cast<GLuint>(bufferTarget_), offset, data.size() * sizeof(data[0]), data.data());
+    }
+    else
+    {
+        glBufferSubData(static_cast<GLuint>(bufferTarget_), currentSize_, data.size() * sizeof(data[0]), data.data());
+    }
+    currentSize_ += data.size() * sizeof(data[0]);
 }

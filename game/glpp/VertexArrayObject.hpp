@@ -14,6 +14,7 @@ namespace aik
         VertexArrayObject();
         void createVertexArrayObject();
         void configureAttribs();
+        void configureAttribsFor2D();
         void bind();
     private:
         GLuint vertexArrayObject_;
