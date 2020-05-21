@@ -13,6 +13,7 @@ include_directories(external_includes/glm/)
 add_subdirectory(external_includes/glad/)
 add_subdirectory(external_includes/assimp/)
 add_subdirectory(external_includes/entt/)
+add_subdirectory(external_includes/cereal)
 
 # add game directory
 include_directories(game/)
@@ -38,4 +39,5 @@ target_link_libraries(${PROJECT_NAME} PRIVATE ${FREETYPE_LIBRARIES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_INCLUDE_DIRS})
 # ECS EnTT
 target_link_libraries(${PROJECT_NAME} PRIVATE EnTT)
-
+# Cereal for serialization
+target_link_libraries(${PROJECT_NAME} PRIVATE cereal)
