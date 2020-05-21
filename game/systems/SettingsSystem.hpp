@@ -1,7 +1,6 @@
 //
 // Created by omar on 5/20/20.
 //
-
 #pragma once
 #include <entt/entt.hpp>
 #include "components/Settings.hpp"
@@ -13,6 +12,8 @@ namespace aik
     public:
         SettingsSystem(entt::registry * registry);
         ~SettingsSystem();
+
+        aik::Settings& getSettings();
     private:
         bool hasSettingsFile(const std::string & settingsFileLocation);
         void loadSettingsFile();

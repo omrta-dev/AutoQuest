@@ -7,6 +7,7 @@
 #include <SFML/Graphics/Shader.hpp>
 #include <entt/entt.hpp>
 #include "systems/SettingsSystem.hpp"
+#include "systems/RenderSystem.hpp"
 
 class Game
 {
@@ -17,10 +18,14 @@ private:
     void initializeResources();
     void gameLoop();
     void processInput();
-    void processPhysics();
-    void renderGraphics();
+    void update();
+    void render();
+    void close();
+    void updatePreferences();
+
     sf::RenderWindow window_;
     entt::registry registry_;
     aik::SettingsSystem settingsSystem_;
+    aik::RenderSystem renderSystem_;
 };
 
