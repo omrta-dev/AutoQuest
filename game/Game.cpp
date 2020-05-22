@@ -26,7 +26,7 @@ void Game::startGame()
 }
 
 void Game::initializeResources()
-{
+{)
 }
 
 void Game::gameLoop()
