@@ -5,11 +5,10 @@
 #include "Game.hpp"
 #include "SFML/Window/Event.hpp"
 #include <glad/glad.h>
-#include <iostream>
 
-Game::Game() : settingsSystem_(&registry_), renderSystem_(&registry_)
+Game::Game() : gladStatus(gladLoadGL()), settingsSystem_(&registry_), renderSystem_(&registry_)
 {
-    aik::Settings settings = settingsSystem_.getSettings();
+    aik::Component::Settings settings = settingsSystem_.getSettings();
     window_.create({settings.width, settings.height}, "", settings.style, sf::ContextSettings(16, 0, 4, 4, 3));
     gladLoadGL();
     window_.setFramerateLimit(settings.fps);
@@ -26,7 +25,9 @@ void Game::startGame()
 }
 
 void Game::initializeResources()
-{)
+{
+    renderSystem_.initialize();
+    auto square = renderSystem_.createSquare();
 }
 
 void Game::gameLoop()
@@ -62,6 +63,7 @@ void Game::update()
 
 void Game::render()
 {
+    renderSystem_.render();
     window_.display();
 }
 

@@ -23,6 +23,7 @@ private:
     void close();
     void updatePreferences();
 
+    int gladStatus = -99;
     sf::RenderWindow window_;
     entt::registry registry_;
     aik::SettingsSystem settingsSystem_;

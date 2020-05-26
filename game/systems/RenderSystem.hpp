@@ -5,17 +5,30 @@
 #pragma once
 #include <entt/entt.hpp>
 #include <glad/glad.h>
+#include "glpp/RenderTarget.hpp"
+
+#include <SFML/Graphics/Shader.hpp>
 
 namespace aik
 {
     class RenderSystem
     {
     public:
-        RenderSystem(entt::registry * registry);
+        explicit RenderSystem(entt::registry * registry);
+        void initialize();
+        void update(float dt);
+        void render();
+        entt::entity createSquare();
     private:
+        void renderUi();
+        void renderGame();
+
         entt::registry * registry_;
-        GLuint uiVao_;
-        GLuint gameVao_;
-        GLuint
+        RenderTarget uiRenderTarget_{};
+        RenderTarget gameRenderTarget_{};
+        unsigned long int lastIndex_ = 0;
+        unsigned int lastBufferIndex_ = 0;
+        sf::Shader vert, frag;
+
     };
 }

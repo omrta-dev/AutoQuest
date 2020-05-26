@@ -10,10 +10,10 @@ namespace aik
     class SettingsSystem
     {
     public:
-        SettingsSystem(entt::registry * registry);
+        explicit SettingsSystem(entt::registry * registry);
         ~SettingsSystem();
 
-        aik::Settings& getSettings();
+        aik::Component::Settings& getSettings();
     private:
         bool hasSettingsFile(const std::string & settingsFileLocation);
         void loadSettingsFile();

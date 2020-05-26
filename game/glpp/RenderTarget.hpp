@@ -1,21 +1,23 @@
 //
 // Created by omar on 5/21/20.
 //
-
 #pragma once
 #include <glad/glad.h>
 #include <vector>
+#include <iostream>
+
 namespace aik
 {
-    enum class BufferTarget : unsigned int {VERTEX_ARRAY = UINT32_MAX, VERTEX_BUFFER = GL_ARRAY_BUFFER, ELEMENT_ARRAY = GL_ELEMENT_ARRAY_BUFFER};
+    enum class BufferTarget : unsigned int {VERTEX_ARRAY = GL_VERTEX_ARRAY, VERTEX_BUFFER = GL_ARRAY_BUFFER, ELEMENT_ARRAY = GL_ELEMENT_ARRAY_BUFFER};
 
     class RenderTarget
     {
     public:
+        void allocate(BufferTarget bufferTarget, GLsizeiptr size, GLenum usage);
         void createBuffer(BufferTarget bufferTarget);
-        void bindBuffer(BufferTarget bufferTarget);
+        void bindBuffer(BufferTarget bufferTarget) const;
         template <class T> void addBufferData(BufferTarget bufferTarget, std::vector<T> data, GLintptr offset = UINT64_MAX);
-    private:
+        void setupVertexAttributes();
         GLuint vao_;
         GLuint vbo_;
         GLuint ebo_;
@@ -32,8 +34,10 @@ namespace aik
         }
         else
         {
-            glBufferSubData(static_cast<GLuint>(bufferTarget), currentSize_, data.size() * sizeof(data[0]), data.data());
+            glBufferSubData(static_cast<GLuint>(bufferTarget),
+                            bufferTarget == BufferTarget::VERTEX_BUFFER ? vboCurrentSize_ : eboCurrentSize_,
+                            data.size() * sizeof(data[0]), data.data());
         }
-        currentSize_ += data.size() * sizeof(data[0]);
+        bufferTarget == BufferTarget::VERTEX_BUFFER ? vboCurrentSize_+= data.size() * sizeof(data[0]) : eboCurrentSize_ += data.size() * sizeof(data[0]);
     }
 }

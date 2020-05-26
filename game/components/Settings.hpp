@@ -4,7 +4,7 @@
 #pragma once
 #include <glm/vec2.hpp>
 
-namespace aik
+namespace aik::Component
 {
     // defines the settings the game will globally have
     struct Settings

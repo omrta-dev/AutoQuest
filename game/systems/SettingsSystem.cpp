@@ -13,7 +13,7 @@ const std::string configFilePath = "/config.json";
 aik::SettingsSystem::SettingsSystem(entt::registry *registry)
 {
     registry_ = registry;
-    registry_->emplace<aik::Settings>(registry_->create());
+    registry_->emplace<aik::Component::Settings>(registry_->create());
     if(hasSettingsFile(configFilePath))
     {
         loadSettingsFile();
@@ -39,12 +39,12 @@ void aik::SettingsSystem::loadSettingsFile()
     entt::registry dest;
     std::fstream storage(std::filesystem::current_path().string() + configFilePath, std::fstream::in | std::fstream::out);
     cereal::JSONInputArchive input{storage};
-    entt::snapshot_loader{dest}.entities(input).component<aik::Settings>(input);
-    auto settingsView = dest.view<aik::Settings>();
+    entt::snapshot_loader{dest}.entities(input).component<aik::Component::Settings>(input);
+    auto settingsView = dest.view<aik::Component::Settings>();
     auto loadedSettings = settingsView.get(settingsView.front());
 
-    auto destinationSettings = registry_->view<aik::Settings>().front();
-    registry_->patch<aik::Settings>(destinationSettings, [loadedSettings](auto & newSetting) {newSetting = loadedSettings;});
+    auto destinationSettings = registry_->view<aik::Component::Settings>().front();
+    registry_->patch<aik::Component::Settings>(destinationSettings, [loadedSettings](auto & newSetting) {newSetting = loadedSettings;});
 }
 
 void aik::SettingsSystem::saveSettingsFile()
@@ -53,12 +53,12 @@ void aik::SettingsSystem::saveSettingsFile()
     if(storage.is_open())
     {
         cereal::JSONOutputArchive output(storage);
-        entt::snapshot{*registry_}.entities(output).component<aik::Settings>(output);
+        entt::snapshot{*registry_}.entities(output).component<aik::Component::Settings>(output);
     }
 }
 
-aik::Settings &aik::SettingsSystem::getSettings()
+aik::Component::Settings &aik::SettingsSystem::getSettings()
 {
     // there should always only be 1 settings entity so we can just return that
-    return registry_->view<aik::Settings>().get(registry_->view<aik::Settings>().front());
+    return registry_->view<aik::Component::Settings>().get(registry_->view<aik::Component::Settings>().front());
 }
