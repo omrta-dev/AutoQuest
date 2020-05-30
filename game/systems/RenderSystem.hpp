@@ -5,9 +5,10 @@
 #pragma once
 #include <entt/entt.hpp>
 #include <glad/glad.h>
-#include "glpp/RenderTarget.hpp"
-
 #include <SFML/Graphics/Shader.hpp>
+
+#include "components/Renderable.hpp"
+#include "glpp/RenderTarget.hpp"
 
 namespace aik
 {
@@ -18,17 +19,12 @@ namespace aik
         void initialize();
         void update(float dt);
         void render();
-        entt::entity createSquare();
+        aik::Component::Renderable& createSprite(aik::RenderTarget* renderTarget, aik::Shader* shader);
     private:
         void renderUi();
         void renderGame();
 
         entt::registry * registry_;
-        RenderTarget uiRenderTarget_{};
-        RenderTarget gameRenderTarget_{};
-        unsigned long int lastIndex_ = 0;
-        unsigned int lastBufferIndex_ = 0;
-        sf::Shader vert, frag;
-
+        RenderTarget * lastBufferIndex_ = nullptr;
     };
 }

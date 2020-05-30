@@ -1,9 +1,5 @@
 #version 330 core
 
-in vec2 inputUv;
-
-uniform sampler2D diffuseTexture;
-
 void main() {
-    gl_FragColor = texture(diffuseTexture, inputUv);
+    gl_FragColor = vec4(.7, .6, .4, 1.0);
 }

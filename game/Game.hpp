@@ -28,5 +28,9 @@ private:
     entt::registry registry_;
     aik::SettingsSystem settingsSystem_;
     aik::RenderSystem renderSystem_;
+
+    // Resource Loaders
+    entt::cache<aik::Shader> shaderManager_;
+    entt::cache<aik::RenderTarget> bufferManager_;
 };
 

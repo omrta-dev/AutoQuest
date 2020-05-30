@@ -3,8 +3,8 @@
 //
 #include <components/Clickable.hpp>
 #include <components/Renderable.hpp>
+#include <components/Transform.hpp>
 #include "RenderSystem.hpp"
-#include "components/Renderable.hpp"
 #include "Shapes.hpp"
 
 aik::RenderSystem::RenderSystem(entt::registry *registry)
@@ -14,23 +14,7 @@ aik::RenderSystem::RenderSystem(entt::registry *registry)
 
 void aik::RenderSystem::initialize()
 {
-    // TODO: All of this gets pulled into the entity Renderable
-    vert.loadFromFile("assets/shaders/vert.vert", "assets/shaders/frag.frag");
-    uiRenderTarget_.createBuffer(BufferTarget::VERTEX_ARRAY);
-    uiRenderTarget_.createBuffer(BufferTarget::VERTEX_BUFFER);
-    uiRenderTarget_.createBuffer(BufferTarget::ELEMENT_ARRAY);
-    uiRenderTarget_.allocate(BufferTarget::VERTEX_BUFFER, 1024*1024*1024, GL_DYNAMIC_DRAW);
-    uiRenderTarget_.allocate(BufferTarget::ELEMENT_ARRAY, 1024*1024*1024, GL_DYNAMIC_DRAW);
-
-    gameRenderTarget_.createBuffer(BufferTarget::VERTEX_ARRAY);
-    gameRenderTarget_.createBuffer(BufferTarget::VERTEX_BUFFER);
-    gameRenderTarget_.createBuffer(BufferTarget::ELEMENT_ARRAY);
-    gameRenderTarget_.allocate(BufferTarget::VERTEX_BUFFER, 1024*1024*1024, GL_DYNAMIC_DRAW);
-    gameRenderTarget_.allocate(BufferTarget::ELEMENT_ARRAY, 1024*1024*1024, GL_DYNAMIC_DRAW);
-    // TODO: to here
-
     glClearColor(.4, .6, .8, 1.0);
-    glPointSize(10.0f);
 }
 
 void aik::RenderSystem::update(float dt)
@@ -47,8 +31,6 @@ void aik::RenderSystem::render()
 
 void aik::RenderSystem::renderUi()
 {
-    uiRenderTarget_.bindBuffer(BufferTarget::VERTEX_ARRAY);
-
     auto resources = registry_->view<aik::Component::Renderable, aik::Component::Clickable>();
     for(auto entity: resources)
     {
@@ -58,45 +40,45 @@ void aik::RenderSystem::renderUi()
 
 void aik::RenderSystem::renderGame()
 {
-    auto resources = registry_->view<aik::Component::Renderable>(entt::exclude<aik::Component::Clickable>);
+    auto resources = registry_->view<aik::Component::Renderable, aik::Component::Transform>(entt::exclude<aik::Component::Clickable>);
     for(auto entity: resources)
     {
         const auto &renderable = registry_->get<aik::Component::Renderable>(entity);
-        if (renderable.isVisible)
+        const auto &transformable = registry_->get<aik::Component::Transform>(entity);
+        if (renderable.buffers != nullptr)
         {
-            // only bind the buffer if it's not bound
-            if(lastBufferIndex_ != renderable.vao)
+            if (renderable.isVisible)
             {
-                gameRenderTarget_.bindBuffer(BufferTarget::VERTEX_ARRAY);
-                gameRenderTarget_.bindBuffer(BufferTarget::ELEMENT_ARRAY);
-            }
-            lastBufferIndex_ = renderable.vao;
+                // only bind the buffer if it's not bound
+                if (lastBufferIndex_ == renderable.buffers)
+                {
+                    renderable.buffers->bindBuffer(BufferTarget::VERTEX_ARRAY);
+                    renderable.buffers->bindBuffer(BufferTarget::ELEMENT_ARRAY);
+                }
+                lastBufferIndex_ = renderable.buffers;
 
-            glUseProgram(renderable.program);
-            glDrawElements(GL_TRIANGLES, renderable.indices, GL_UNSIGNED_INT, reinterpret_cast<GLvoid*>(renderable.offset));
+                renderable.shader->useProgram();
+                glDrawElements(renderable.drawMode, renderable.indices, GL_UNSIGNED_INT,
+                               reinterpret_cast<GLvoid *>(renderable.indexOffset));
+            }
         }
     }
-
 }
 
-entt::entity aik::RenderSystem::createSquare()
+aik::Component::Renderable& aik::RenderSystem::createSprite(aik::RenderTarget* renderTarget, aik::Shader* shader)
 {
+    // add data to renderTarget
     auto vertices = aik::Shape::Square::getVertices();
     auto indices = aik::Shape::Square::getIndices();
-    std::for_each(indices.begin(), indices.end(), [this](unsigned int &n){n += lastIndex_;}); // modify the square entity
+    std::for_each(indices.begin(), indices.end(), [renderTarget, vertices](unsigned int &n){n += renderTarget->lastIndex_;});
+    renderTarget->lastIndex_ += vertices.size();
 
-    // create and register some attributes to the square entity
+    renderTarget->addBufferData(BufferTarget::VERTEX_BUFFER, vertices);
+    renderTarget->addBufferData(BufferTarget::ELEMENT_ARRAY, indices, 4);
+
+    // register component with ECS
     auto square = registry_->create();
-    registry_->emplace<aik::Component::Renderable>(square, vertices, indices.size(), reinterpret_cast<GLvoid*>(lastIndex_ * indices.size()));
-
-    // add data to buffers for GPU
-    gameRenderTarget_.bindBuffer(BufferTarget::VERTEX_ARRAY);
-    gameRenderTarget_.bindBuffer(BufferTarget::VERTEX_BUFFER);
-    gameRenderTarget_.addBufferData(BufferTarget::VERTEX_BUFFER, vertices);
-    gameRenderTarget_.bindBuffer(BufferTarget::ELEMENT_ARRAY);
-    gameRenderTarget_.addBufferData(BufferTarget::ELEMENT_ARRAY, indices);
-    gameRenderTarget_.setupVertexAttributes();
-    lastIndex_ += vertices.size(); // increment index for indices to work
-
-    return square;
+    registry_->emplace<aik::Component::Transform>(square);
+    return registry_->emplace<aik::Component::Renderable>(square, aik::Shape::Square::getVertices(),
+            aik::Shape::Square::getIndices().size(), reinterpret_cast<GLvoid*>(aik::Shape::Square::getIndices().size()), renderTarget, shader);
 }
