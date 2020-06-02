@@ -9,10 +9,10 @@ namespace aik::Shape
 {
     struct Square
     {
-        static inline std::vector<glm::vec4> getVertices() { return {{.5f, .5f, 0., 0. },
-                                                                     {.5f, -.5f, 0., 1.},
-                                                                     {-.5f, -.5f, 1., 1.},
-                                                                     {-.5f, .5f, 1., 0}}; }
+        static inline std::vector<glm::vec4> getVertices() { return {{1.f, 1.f, 0., 0. },
+                                                                     {1.f, .0f, 0., 1.},
+                                                                     {0.f, 0.f, 1., 1.},
+                                                                     {0.f, 1.f, 1., 0}}; }
         static inline std::vector<unsigned int> getIndices() { return {0, 1, 3, 1, 2, 3}; }
     };
 }

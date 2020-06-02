@@ -8,6 +8,7 @@
 #include <entt/entt.hpp>
 #include "systems/SettingsSystem.hpp"
 #include "systems/RenderSystem.hpp"
+#include "systems/InputSystem.hpp"
 
 class Game
 {
@@ -28,9 +29,8 @@ private:
     entt::registry registry_;
     aik::SettingsSystem settingsSystem_;
     aik::RenderSystem renderSystem_;
-
+    aik::InputSystem inputSystem_;
     // Resource Loaders
     entt::cache<aik::Shader> shaderManager_;
     entt::cache<aik::RenderTarget> bufferManager_;
 };
-

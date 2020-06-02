@@ -1,11 +1,13 @@
 //
 // Created by omar on 5/21/20.
 //
+#include <SFML/Window/Event.hpp>
 #include <components/Clickable.hpp>
 #include <components/Renderable.hpp>
 #include <components/Transform.hpp>
 #include "RenderSystem.hpp"
 #include "Shapes.hpp"
+#include "Camera.hpp"
 
 aik::RenderSystem::RenderSystem(entt::registry *registry)
 {
@@ -40,11 +42,13 @@ void aik::RenderSystem::renderUi()
 
 void aik::RenderSystem::renderGame()
 {
-    auto resources = registry_->view<aik::Component::Renderable, aik::Component::Transform>(entt::exclude<aik::Component::Clickable>);
+    auto resources = registry_->view<aik::Component::Renderable, aik::Component::Transform>();
     for(auto entity: resources)
     {
         const auto &renderable = registry_->get<aik::Component::Renderable>(entity);
         const auto &transformable = registry_->get<aik::Component::Transform>(entity);
+        auto cameraView = registry_->view<aik::Camera>();
+        const auto& camera = registry_->get<aik::Camera>(cameraView.front());
         if (renderable.buffers != nullptr)
         {
             if (renderable.isVisible)
@@ -58,6 +62,14 @@ void aik::RenderSystem::renderGame()
                 lastBufferIndex_ = renderable.buffers;
 
                 renderable.shader->useProgram();
+                auto positionLoc = renderable.shader->getUniformLocation("position");
+                renderable.shader->glUniform(positionLoc, transformable.position);
+                auto scaleLoc = renderable.shader->getUniformLocation("scale");
+                renderable.shader->glUniform(scaleLoc, transformable.scale);
+                auto viewLoc = renderable.shader->getUniformLocation("view");
+                renderable.shader->glUniformMatrix(viewLoc, GL_FALSE, camera.view_);
+                auto projectionLoc = renderable.shader->getUniformLocation("projection");
+                renderable.shader->glUniformMatrix(projectionLoc, GL_FALSE, camera.projection_);
                 glDrawElements(renderable.drawMode, renderable.indices, GL_UNSIGNED_INT,
                                reinterpret_cast<GLvoid *>(renderable.indexOffset));
             }
@@ -65,7 +77,7 @@ void aik::RenderSystem::renderGame()
     }
 }
 
-aik::Component::Renderable& aik::RenderSystem::createSprite(aik::RenderTarget* renderTarget, aik::Shader* shader)
+entt::entity aik::RenderSystem::createSprite(aik::RenderTarget* renderTarget, aik::Shader* shader)
 {
     // add data to renderTarget
     auto vertices = aik::Shape::Square::getVertices();
@@ -78,7 +90,11 @@ aik::Component::Renderable& aik::RenderSystem::createSprite(aik::RenderTarget* r
 
     // register component with ECS
     auto square = registry_->create();
-    registry_->emplace<aik::Component::Transform>(square);
-    return registry_->emplace<aik::Component::Renderable>(square, aik::Shape::Square::getVertices(),
+    auto& transform = registry_->emplace<aik::Component::Transform>(square);
+    transform.position = glm::vec2(1.f);
+    transform.scale = glm::vec2(50.f);
+    registry_->emplace<aik::Component::Renderable>(square, aik::Shape::Square::getVertices(),
             aik::Shape::Square::getIndices().size(), reinterpret_cast<GLvoid*>(aik::Shape::Square::getIndices().size()), renderTarget, shader);
+    registry_->emplace<aik::Component::Clickable>(square, []{std::cout << "I was clicked!" << std::endl;}, sf::Mouse::Button::Left);
+    return square;
 }

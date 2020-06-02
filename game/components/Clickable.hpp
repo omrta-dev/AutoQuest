@@ -10,5 +10,6 @@ namespace aik::Component
     {
     public:
         std::function<void()> action;
+        sf::Mouse::Button button;
     };
 }

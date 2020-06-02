@@ -19,7 +19,7 @@ namespace aik
         void initialize();
         void update(float dt);
         void render();
-        aik::Component::Renderable& createSprite(aik::RenderTarget* renderTarget, aik::Shader* shader);
+        entt::entity createSprite(aik::RenderTarget* renderTarget, aik::Shader* shader);
     private:
         void renderUi();
         void renderGame();
