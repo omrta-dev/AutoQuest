@@ -18,32 +18,13 @@ namespace aik
     {
     public:
         Camera();
-
         // Controls the type of camera to be created
         void createOrthographic(float left, float right, float top, float bottom, float zNear, float zFar);
-
         void setLookAt(glm::vec3 eye);
-
         void move(CameraMovement movement);
-
         void zoom(float zoomFactor);
-
         void updateProjection();
-
-        // The following functions will retrieve the view, projection matrices in different configurations
-        glm::mat4 &GetView()
-        { return view_; }
-
-        glm::mat4 &GetProjection()
-        { return projection_; }
-
-        float GetZoom()
-        { return zoom_; }
-
-        bool GetCameraType()
-        { return isOrtho_; }
-
-    private:
+        glm::vec2 getScreenToWorld(const glm::vec2& screenCoord);
         glm::mat4 view_, projection_;
         // These are the camera vectors that control position, up dir, and right dir
         glm::vec3 position_;
@@ -52,7 +33,6 @@ namespace aik
         float leftEdge_, rightEdge_, bottomEdge_, topEdge_;
         // Persp Params
         float zoom_ = 45.0f;
-
         float zNear_, zFar_;
     };
 }

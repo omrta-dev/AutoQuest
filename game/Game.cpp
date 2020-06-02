@@ -4,20 +4,18 @@
 
 #include "Game.hpp"
 #include "SFML/Window/Event.hpp"
-#include "glpp/GlmGLSLWrapper.hpp"
-#include "SFML/System/Sleep.hpp"
+#include <glad/glad.h>
+#include "Camera.hpp"
+#include "components/Transform.hpp"
 
-constexpr unsigned int model_index = 6;
-
-Game::Game() : window_({800, 900}, "", sf::Style::Default, sf::ContextSettings(16, 0, 4, 4, 3))
+Game::Game() : gladStatus(gladLoadGL()), settingsSystem_(&registry_), renderSystem_(&registry_), inputSystem_(&registry_)
 {
+    aik::Component::Settings settings = settingsSystem_.getSettings();
+    window_.create({settings.width, settings.height}, "", settings.style, sf::ContextSettings(16, 0, 4, 4, 3, sf::ContextSettings::Attribute::Core));
     gladLoadGL();
-    window_.setFramerateLimit(144);
-}
-
-Game::~Game()
-{
-
+    window_.setFramerateLimit(settings.fps);
+    window_.setPosition({settings.position.x, settings.position.y});
+    inputSystem_.setWindow(&window_);
 }
 
 void Game::startGame()
@@ -31,140 +29,87 @@ void Game::startGame()
 
 void Game::initializeResources()
 {
-    // Open gl setup
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glViewport(0, 0, 800, 900);
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+    renderSystem_.initialize();
+    auto shader = shaderManager_.load<aik::Shader>("wood"_hs, "assets/shaders/vert.vert", "assets/shaders/frag.frag");
+    auto buffer = bufferManager_.load<aik::RenderTarget>("game"_hs);
+    auto square = renderSystem_.createSprite(&buffer.get(), &shader.get());
+    auto square2 = renderSystem_.createSprite(&buffer.get(), &shader.get());
+    registry_.get<aik::Component::Transform>(square).position = glm::vec2(100.0f);
+    registry_.get<aik::Component::Transform>(square2).position = glm::vec2(25.0f);
 
-    model_.loadModel("assets/models/nanosuit.obj");
-    auto& meshes = model_.getMeshes();
-    meshes.insert(meshes.end(), model_.getMeshes().begin(), model_.getMeshes().end());
-    std::vector<aik::Vertex> vertices;
-    vao_.createVertexArrayObject();
-    vao_.bind();
-    vbo_.createVertexBufferObject();
-    vbo_.bind();
-    vbo_.allocate(1024 * 1024 * 1024);
-    for(aik::Mesh mesh : meshes)
-    {
-        vbo_.addData(mesh.getVertices());
-    }
-    ebo_.createVertexBufferObject(aik::BufferTarget::ELEMENT_BUFFER);
-    ebo_.bind();
-    ebo_.allocate(1024 * 1024 * 1024);
-    for(aik::Mesh mesh : meshes)
-    {
-        ebo_.addData(mesh.getIndices());
-    }
-    vao_.configureAttribs();
+    // add inputs
+    inputSystem_.createKeyInput([square, this]{this->registry_.get<aik::Component::Transform>(square).position = glm::vec2(500.0f);}, sf::Keyboard::W, true);
 
-    model_.setScale(glm::vec3(50.0f));
-    model_.setPosition(glm::vec3(600, 400, 0 ));
-    shader_.loadFromFile("assets/shaders/vert.vert", "assets/shaders/frag.frag");
-
-    model_2 = model_;
-    model_2.setPosition(glm::vec3(400, 400, 0 ));
-
+    // currently there is one global camera
     auto windowSize = window_.getSize();
-    camera_.setLookAt(glm::vec3(0, 0, -1));
-    camera_.createOrthographic(0.0f, windowSize.x, windowSize.y, 0.0f, -1000.0f, 1000.0f);
-
-    // Input stuff
-    inputManager_.setInputMode(aik::InputMode::READ);
-    inputManager_.addEvent({sf::Event::JoystickButtonPressed, 0, [this](){ glClearColor(1.0f, 0.0, 0.0, 1.0);}});
-    inputManager_.addEvent({sf::Event::JoystickButtonPressed, 1, [this](){ glClearColor(0.0f, 0.0, 1.0, 1.0);}});
-
-
-    inputManager_.addEvent({sf::Event::KeyPressed, sf::Keyboard::W, [this](){ camera_.move(aik::CameraMovement::UP);}});
-    inputManager_.addEvent({sf::Event::KeyPressed, sf::Keyboard::S, [this](){ camera_.move(aik::CameraMovement::DOWN);}});
-    inputManager_.addEvent({sf::Event::KeyPressed, sf::Keyboard::A, [this](){ camera_.move(aik::CameraMovement::LEFT);}});
-    inputManager_.addEvent({sf::Event::KeyPressed, sf::Keyboard::D, [this](){ camera_.move(aik::CameraMovement::RIGHT);}});
-    inputManager_.addEvent({sf::Event::KeyPressed, sf::Keyboard::Add, [this](){ model_.rotate({0, 1, 0}, 10.0f);}});
-    inputManager_.addEvent({sf::Event::KeyPressed, sf::Keyboard::Subtract, [this](){ model_.rotate({0, 1, 0}, -10.0f);}});
-    inputManager_.addEvent({sf::Event::KeyPressed, sf::Keyboard::E, [this](){ model_2.rotate({0, 1, 0}, 10.0f);}});
-    inputManager_.addEvent({sf::Event::KeyPressed, sf::Keyboard::Q, [this](){ model_2.rotate({0, 1, 0}, -10.0f);}});
-    inputManager_.addEvent({sf::Event::MouseWheelScrolled, 0, [this](){ camera_.zoom(-1.0);}});
-    inputManager_.addEvent({sf::Event::MouseWheelScrolled, 1, [this](){ camera_.zoom(1.0);}});
+    auto& camera = registry_.emplace<aik::Camera>(registry_.create());
+    camera.setLookAt(glm::vec3(0, 0, -1));
+    camera.createOrthographic(0.0f, windowSize.x, windowSize.y, 0.0f, -1000.0f, 1000.0f);
 }
 
 void Game::gameLoop()
 {
     processInput();
-    processPhysics();
-    renderGraphics();
+    update();
+    render();
 }
 
 void Game::processInput()
 {
-    sf::Event event;
-    while (window_.pollEvent(event))
+    sf::Event e{};
+    while(window_.pollEvent(e))
     {
-        inputManager_.processEvents(event);
-        if (event.type == sf::Event::Resized)
+        if (e.type == sf::Event::Resized)
         {
-            glViewport(0, 0, event.size.width, event.size.height);
+            glViewport(0, 0, e.size.width, e.size.height);
             auto windowSize = window_.getSize();
-            camera_.createOrthographic(0.0f, windowSize.x, windowSize.y, 0.0f, -1000.0f, 1000.0f);
+            auto cameraView = registry_.view<aik::Camera>();
+            auto& camera = registry_.get<aik::Camera>(cameraView.front());
+            camera.createOrthographic(0.0f, windowSize.x, windowSize.y, 0.0f, -1000.0f, 1000.0f);
         }
-        if(event.type == sf::Event::Closed)
+        if(e.type == sf::Event::KeyPressed)
         {
-            window_.close();
+            inputSystem_.processKeyboard(e, 1.0f);
+            if (e.key.code == sf::Keyboard::Escape)
+            {
+                close();
+            }
+        }
+        if(e.type == sf::Event::MouseButtonPressed)
+        {
+            inputSystem_.processMouse(e, 1.0f);
+        }
+        if(e.type == sf::Event::JoystickButtonPressed || e.type == sf::Event::JoystickMoved)
+        {
+            inputSystem_.processJoystick(e, 1.0f);
+        }
+        if(e.type == sf::Event::Closed)
+        {
+            close();
         }
     }
 }
 
-void Game::processPhysics()
+void Game::update()
 {
+
 }
 
-void Game::renderGraphics()
+void Game::render()
 {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    sf::Shader::bind(&shader_);
-    shader_.setUniform("model", aik::GlmGLSLWrapper::GlmToGlslMat4(model_.getModel()));
-    shader_.setUniform("view", aik::GlmGLSLWrapper::GlmToGlslMat4( camera_.GetView()));
-    shader_.setUniform("projection", aik::GlmGLSLWrapper::GlmToGlslMat4( camera_.GetProjection()));
-
-    vao_.bind();
-    ebo_.bind();
-
-    unsigned long offset = 0;
-    unsigned int textureId = 0;
-    for(aik::Mesh  mesh : model_.getMeshes())
-    {
-        for(const auto& texture : mesh.getTextures())
-        {
-            glActiveTexture(GL_TEXTURE0 + textureId);
-            shader_.setUniform("diffuseTexture", (float)texture.id_);
-            glBindTexture(GL_TEXTURE_2D, texture.id_);
-        }
-        glDrawElements(GL_TRIANGLES, mesh.getIndices().size(), GL_UNSIGNED_INT, (void *)offset);
-        offset += (mesh.getIndices().size() * sizeof(unsigned int));
-    }
-
-
-    sf::Shader::bind(&shader_);
-    shader_.setUniform("model", aik::GlmGLSLWrapper::GlmToGlslMat4(model_2.getModel()));
-    shader_.setUniform("view", aik::GlmGLSLWrapper::GlmToGlslMat4( camera_.GetView()));
-    shader_.setUniform("projection", aik::GlmGLSLWrapper::GlmToGlslMat4( camera_.GetProjection()));
-    offset = 0;
-    textureId = 0;
-    for(aik::Mesh  mesh : model_2.getMeshes())
-    {
-        for(const auto& texture : mesh.getTextures())
-        {
-            glActiveTexture(GL_TEXTURE0 + textureId);
-            shader_.setUniform("diffuseTexture", (float)texture.id_);
-            glBindTexture(GL_TEXTURE_2D, texture.id_);
-        }
-        glDrawElements(GL_TRIANGLES, mesh.getIndices().size(), GL_UNSIGNED_INT, (void *)offset);
-        offset += (mesh.getIndices().size() * sizeof(unsigned int));
-    }
-
-
-
+    renderSystem_.render();
     window_.display();
+}
+
+void Game::close()
+{
+    updatePreferences();
+    window_.close();
+}
+
+void Game::updatePreferences()
+{
+    auto position = window_.getPosition();
+    auto & settings = settingsSystem_.getSettings();
+    settings.position = {position.x, position.y};
 }

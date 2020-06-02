@@ -10,3 +10,6 @@
 [submodule "external_includes/entt"]
 	path = external_includes/entt
 	url = https://github.com/skypjack/entt.git
+[submodule "external_includes/cereal"]
+	path = external_includes/cereal
+	url = https://github.com/USCiLab/cereal.git

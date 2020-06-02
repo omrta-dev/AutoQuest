@@ -4,7 +4,6 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 #include "Camera.hpp"
-#include <iostream>
 
 aik::Camera::Camera() : position_(0, 0, 0)
 {
@@ -26,7 +25,7 @@ void aik::Camera::createOrthographic(float left, float right, float top, float b
 
 void aik::Camera::setLookAt(glm::vec3 eye)
 {
-    position_ = eye;
+    //position_ = eye;
     view_ = glm::translate(glm::mat4(1), position_);
 }
 
@@ -60,4 +59,9 @@ void aik::Camera::zoom(float zoomFactor)
 void aik::Camera::updateProjection()
 {
     projection_ = glm::ortho(leftEdge_ + (zoom_ * 10), rightEdge_  - (zoom_ * 10), bottomEdge_+ (zoom_ * 10), topEdge_ - (zoom_ * 10), zNear_, zFar_);
+}
+
+glm::vec2 aik::Camera::getScreenToWorld(const glm::vec2& screenCoord)
+{
+    return glm::vec2(position_.x, position_.y) - screenCoord;
 }
