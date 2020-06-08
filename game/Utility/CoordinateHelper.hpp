@@ -4,12 +4,14 @@
 #pragma once
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
+#include <Camera.hpp>
 
 namespace aik::utility
 {
     class CoordinateHelper
     {
     public:
-        static bool pointIntersectsBox(glm::vec2 point, glm::vec4 box);
+        // returns true if the point is contained in the box after camera transformations ( screen to world interesection )
+        static bool pointIntersectsBox(glm::vec2 point, glm::vec4 box, const aik::Camera& camera);
     };
 };

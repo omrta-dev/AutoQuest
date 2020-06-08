@@ -31,7 +31,7 @@ add_executable(${PROJECT_NAME} main.cpp game/Game.cpp game/Game.hpp
         game/components/Transform.hpp
         game/Camera.cpp game/Camera.hpp
         game/components/Input.hpp
-        game/Utility/CoordinateHelper.hpp game/Utility/CoordinateHelper.cpp)
+        game/Utility/CoordinateHelper.hpp game/Utility/CoordinateHelper.cpp game/components/Texture.hpp game/components/Animation.hpp)
 
 # SFML
 target_link_libraries(${PROJECT_NAME} PRIVATE sfml-audio sfml-graphics sfml-network sfml-system sfml-window)

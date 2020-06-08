@@ -5,6 +5,7 @@
 #include <components/Clickable.hpp>
 #include <components/Renderable.hpp>
 #include <components/Transform.hpp>
+#include <components/Texture.hpp>
 #include "RenderSystem.hpp"
 #include "Shapes.hpp"
 #include "Camera.hpp"
@@ -17,6 +18,7 @@ aik::RenderSystem::RenderSystem(entt::registry *registry)
 void aik::RenderSystem::initialize()
 {
     glClearColor(.4, .6, .8, 1.0);
+    glEnable(GL_DEPTH_TEST);
 }
 
 void aik::RenderSystem::update(float dt)
@@ -49,6 +51,7 @@ void aik::RenderSystem::renderGame()
         const auto &transformable = registry_->get<aik::Component::Transform>(entity);
         auto cameraView = registry_->view<aik::Camera>();
         const auto& camera = registry_->get<aik::Camera>(cameraView.front());
+
         if (renderable.buffers != nullptr)
         {
             if (renderable.isVisible)
@@ -70,8 +73,26 @@ void aik::RenderSystem::renderGame()
                 renderable.shader->glUniformMatrix(viewLoc, GL_FALSE, camera.view_);
                 auto projectionLoc = renderable.shader->getUniformLocation("projection");
                 renderable.shader->glUniformMatrix(projectionLoc, GL_FALSE, camera.projection_);
+
+                if(registry_->has<aik::Component::Texture>(entity))
+                {
+                    const auto& texture = registry_->get<aik::Component::Texture>(entity);
+                    glActiveTexture(GL_TEXTURE0);
+                    glBindTexture(texture.type, texture.id);
+                    auto textureLoc = renderable.shader->getUniformLocation("textureMap");
+                    renderable.shader->glUniform(textureLoc, static_cast<GLint>(0));
+                    auto layerLoc = renderable.shader->getUniformLocation("layer");
+                    renderable.shader->glUniform(layerLoc, static_cast<GLfloat>(1));
+                }
+
                 glDrawElements(renderable.drawMode, renderable.indices, GL_UNSIGNED_INT,
                                reinterpret_cast<GLvoid *>(renderable.indexOffset));
+
+                if(registry_->has<aik::Component::Texture>(entity))
+                {
+                    const auto &texture = registry_->get<aik::Component::Texture>(entity);
+                    glBindTexture(texture.type, 0);
+                }
             }
         }
     }
@@ -92,9 +113,8 @@ entt::entity aik::RenderSystem::createSprite(aik::RenderTarget* renderTarget, ai
     auto square = registry_->create();
     auto& transform = registry_->emplace<aik::Component::Transform>(square);
     transform.position = glm::vec2(1.f);
-    transform.scale = glm::vec2(50.f);
+    transform.scale = glm::vec2(64.f);
     registry_->emplace<aik::Component::Renderable>(square, aik::Shape::Square::getVertices(),
             aik::Shape::Square::getIndices().size(), reinterpret_cast<GLvoid*>(aik::Shape::Square::getIndices().size()), renderTarget, shader);
-    registry_->emplace<aik::Component::Clickable>(square, []{std::cout << "I was clicked!" << std::endl;}, sf::Mouse::Button::Left);
     return square;
 }

@@ -5,6 +5,8 @@
 #pragma once
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Shader.hpp>
+#include <SFML/System/Clock.hpp>
+
 #include <entt/entt.hpp>
 #include "systems/SettingsSystem.hpp"
 #include "systems/RenderSystem.hpp"
@@ -18,14 +20,15 @@ public:
 private:
     void initializeResources();
     void gameLoop();
-    void processInput();
-    void update();
+    void processInput(const float& dt);
+    void update(const float& dt);
     void render();
     void close();
     void updatePreferences();
 
     int gladStatus = -99;
     sf::RenderWindow window_;
+    sf::Clock clock_;
     entt::registry registry_;
     aik::SettingsSystem settingsSystem_;
     aik::RenderSystem renderSystem_;

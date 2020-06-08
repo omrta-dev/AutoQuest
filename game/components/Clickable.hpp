@@ -11,5 +11,8 @@ namespace aik::Component
     public:
         std::function<void()> action;
         sf::Mouse::Button button;
+        float duration = std::numeric_limits<float>::max();
+        float heldDuration = 0.0f;
+        sf::Event::EventType type = sf::Event::MouseButtonPressed;
     };
 }
