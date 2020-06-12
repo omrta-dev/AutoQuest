@@ -34,6 +34,6 @@ private:
     aik::RenderSystem renderSystem_;
     aik::InputSystem inputSystem_;
     // Resource Loaders
-    entt::cache<aik::Shader> shaderManager_;
-    entt::cache<aik::RenderTarget> bufferManager_;
+    entt::cache<aik::resource::Shader> shaderManager_;
+    entt::cache<aik::resource::RenderTarget> bufferManager_;
 };

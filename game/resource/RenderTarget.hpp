@@ -7,11 +7,11 @@
 #include <iostream>
 #include <entt/resource/loader.hpp>
 
-namespace aik
+namespace aik::resource
 {
     enum class BufferTarget : unsigned int {VERTEX_ARRAY = GL_VERTEX_ARRAY, VERTEX_BUFFER = GL_ARRAY_BUFFER, ELEMENT_ARRAY = GL_ELEMENT_ARRAY_BUFFER};
 
-class RenderTarget final: public entt::loader<aik::RenderTarget, aik::RenderTarget>
+class RenderTarget final: public entt::loader<aik::resource::RenderTarget, aik::resource::RenderTarget>
     {
     public:
         void allocate(BufferTarget bufferTarget, GLsizeiptr size = 1024 - 1024, GLenum usage = GL_STATIC_DRAW);
@@ -19,7 +19,7 @@ class RenderTarget final: public entt::loader<aik::RenderTarget, aik::RenderTarg
         void bindBuffer(BufferTarget bufferTarget, bool unbind = false);
         template <class T> void addBufferData(BufferTarget bufferTarget, std::vector<T> data, unsigned long int largestIndex = 4, GLintptr offset = UINT64_MAX);
         void setupVertexAttributes();
-        std::shared_ptr<aik::RenderTarget> load() const;
+        std::shared_ptr<aik::resource::RenderTarget> load() const;
         GLuint vao_;
         GLuint vbo_;
         GLuint ebo_;

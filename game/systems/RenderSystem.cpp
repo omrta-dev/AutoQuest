@@ -59,8 +59,8 @@ void aik::RenderSystem::renderGame()
                 // only bind the buffer if it's not bound
                 if (lastBufferIndex_ == renderable.buffers)
                 {
-                    renderable.buffers->bindBuffer(BufferTarget::VERTEX_ARRAY);
-                    renderable.buffers->bindBuffer(BufferTarget::ELEMENT_ARRAY);
+                    renderable.buffers->bindBuffer(aik::resource::BufferTarget::VERTEX_ARRAY);
+                    renderable.buffers->bindBuffer(aik::resource::BufferTarget::ELEMENT_ARRAY);
                 }
                 lastBufferIndex_ = renderable.buffers;
 
@@ -98,7 +98,7 @@ void aik::RenderSystem::renderGame()
     }
 }
 
-entt::entity aik::RenderSystem::createSprite(aik::RenderTarget* renderTarget, aik::Shader* shader)
+entt::entity aik::RenderSystem::createSprite(aik::resource::RenderTarget* renderTarget, aik::resource::Shader* shader)
 {
     // add data to renderTarget
     auto vertices = aik::Shape::Square::getVertices();
@@ -106,8 +106,8 @@ entt::entity aik::RenderSystem::createSprite(aik::RenderTarget* renderTarget, ai
     std::for_each(indices.begin(), indices.end(), [renderTarget, vertices](unsigned int &n){n += renderTarget->lastIndex_;});
     renderTarget->lastIndex_ += vertices.size();
 
-    renderTarget->addBufferData(BufferTarget::VERTEX_BUFFER, vertices);
-    renderTarget->addBufferData(BufferTarget::ELEMENT_ARRAY, indices, 4);
+    renderTarget->addBufferData(aik::resource::BufferTarget::VERTEX_BUFFER, vertices);
+    renderTarget->addBufferData(aik::resource::BufferTarget::ELEMENT_ARRAY, indices, 4);
 
     // register component with ECS
     auto square = registry_->create();

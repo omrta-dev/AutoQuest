@@ -8,7 +8,7 @@
 #include <SFML/Graphics/Shader.hpp>
 
 #include "components/Renderable.hpp"
-#include "glpp/RenderTarget.hpp"
+#include "resource/RenderTarget.hpp"
 
 namespace aik
 {
@@ -19,12 +19,12 @@ namespace aik
         void initialize();
         void update(float dt);
         void render();
-        entt::entity createSprite(aik::RenderTarget* renderTarget, aik::Shader* shader);
+        entt::entity createSprite(aik::resource::RenderTarget* renderTarget, aik::resource::Shader* shader);
     private:
         void renderUi();
         void renderGame();
 
         entt::registry * registry_;
-        RenderTarget * lastBufferIndex_ = nullptr;
+        aik::resource::RenderTarget * lastBufferIndex_ = nullptr;
     };
 }

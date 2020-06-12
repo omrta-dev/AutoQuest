@@ -7,9 +7,9 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <entt/resource/loader.hpp>
 
-namespace aik
+namespace aik::resource
 {
-class Shader final: public entt::loader<aik::Shader, aik::Shader>
+class Shader final: public entt::loader<aik::resource::Shader, aik::resource::Shader>
     {
     public:
         Shader();
@@ -20,7 +20,7 @@ class Shader final: public entt::loader<aik::Shader, aik::Shader>
         void useProgram();
         void unuseProgram();
 		GLint getUniformLocation(const std::string& uniformName);
-        std::shared_ptr<aik::Shader> load(const std::string & vertexShader, const std::string & fragmentShader, const std::string & geometryShader = "") const;
+        std::shared_ptr<aik::resource::Shader> load(const std::string & vertexShader, const std::string & fragmentShader, const std::string & geometryShader = "") const;
 
 		void glUniform(GLuint location, GLuint data);
 		void glUniform(GLuint location, GLint data);

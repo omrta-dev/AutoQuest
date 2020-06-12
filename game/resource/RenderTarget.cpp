@@ -3,31 +3,31 @@
 //
 #include "RenderTarget.hpp"
 
-void aik::RenderTarget::allocate(aik::BufferTarget bufferTarget, GLsizeiptr size, GLenum usage)
+void aik::resource::RenderTarget::allocate(aik::resource::BufferTarget bufferTarget, GLsizeiptr size, GLenum usage)
 {
     bindBuffer(bufferTarget);
     glBufferData(static_cast<GLuint>(bufferTarget), size, nullptr, usage);
 }
 
-void aik::RenderTarget::createBuffer(aik::BufferTarget bufferTarget)
+void aik::resource::RenderTarget::createBuffer(aik::resource::BufferTarget bufferTarget)
 {
-    if(bufferTarget == aik::BufferTarget::VERTEX_ARRAY)
+    if(bufferTarget == aik::resource::BufferTarget::VERTEX_ARRAY)
     {
         glGenVertexArrays(1, &vao_);
     }
-    else if(bufferTarget == aik::BufferTarget::VERTEX_BUFFER)
+    else if(bufferTarget == aik::resource::BufferTarget::VERTEX_BUFFER)
     {
         glGenBuffers(1, &vbo_);
     }
-    else if(bufferTarget == aik::BufferTarget::ELEMENT_ARRAY)
+    else if(bufferTarget == aik::resource::BufferTarget::ELEMENT_ARRAY)
     {
         glGenBuffers(1, &ebo_);
     }
 }
 
-void aik::RenderTarget::bindBuffer(BufferTarget bufferTarget, bool unbind)
+void aik::resource::RenderTarget::bindBuffer(BufferTarget bufferTarget, bool unbind)
 {
-    if(bufferTarget == aik::BufferTarget::VERTEX_ARRAY)
+    if(bufferTarget == aik::resource::BufferTarget::VERTEX_ARRAY)
     {
         if(!vaoBound_)
         {
@@ -35,7 +35,7 @@ void aik::RenderTarget::bindBuffer(BufferTarget bufferTarget, bool unbind)
             vaoBound_ = !unbind;
         }
     }
-    else if(bufferTarget == aik::BufferTarget::VERTEX_BUFFER)
+    else if(bufferTarget == aik::resource::BufferTarget::VERTEX_BUFFER)
     {
         if (!vboBound_)
         {
@@ -43,7 +43,7 @@ void aik::RenderTarget::bindBuffer(BufferTarget bufferTarget, bool unbind)
             vboBound_ = !unbind;
         }
     }
-    else if(bufferTarget == aik::BufferTarget::ELEMENT_ARRAY)
+    else if(bufferTarget == aik::resource::BufferTarget::ELEMENT_ARRAY)
     {
         if (!eboBound_)
         {
@@ -53,7 +53,7 @@ void aik::RenderTarget::bindBuffer(BufferTarget bufferTarget, bool unbind)
     }
 }
 
-void aik::RenderTarget::setupVertexAttributes()
+void aik::resource::RenderTarget::setupVertexAttributes()
 {
     bindBuffer(BufferTarget::VERTEX_ARRAY);
     bindBuffer(BufferTarget::VERTEX_BUFFER);
@@ -64,9 +64,9 @@ void aik::RenderTarget::setupVertexAttributes()
 }
 
 // buffers are allocated enough for 16384 sprites, more than what we should ever need, but we can allocate more if needed
-std::shared_ptr<aik::RenderTarget> aik::RenderTarget::load() const
+std::shared_ptr<aik::resource::RenderTarget> aik::resource::RenderTarget::load() const
 {
-    auto renderTarget = std::make_shared<aik::RenderTarget>();
+    auto renderTarget = std::make_shared<aik::resource::RenderTarget>();
     renderTarget->createBuffer(BufferTarget::VERTEX_ARRAY);
     renderTarget->createBuffer(BufferTarget::VERTEX_BUFFER);
     renderTarget->createBuffer(BufferTarget::ELEMENT_ARRAY);

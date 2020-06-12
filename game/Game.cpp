@@ -52,8 +52,8 @@ void Game::startGame()
 void Game::initializeResources()
 {
     renderSystem_.initialize();
-    auto shader = shaderManager_.load<aik::Shader>("wood"_hs, "assets/shaders/vert.vert", "assets/shaders/frag.frag");
-    auto buffer = bufferManager_.load<aik::RenderTarget>("game"_hs);
+    auto shader = shaderManager_.load<aik::resource::Shader>("wood"_hs, "assets/shaders/vert.vert", "assets/shaders/frag.frag");
+    auto buffer = bufferManager_.load<aik::resource::RenderTarget>("game"_hs);
     auto square = renderSystem_.createSprite(&buffer.get(), &shader.get());
     registry_.get<aik::Component::Transform>(square).position = glm::vec2(0.0f);
     registry_.get<aik::Component::Transform>(square).scale = glm::vec2(800.0f);
