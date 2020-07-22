@@ -17,22 +17,22 @@ class RenderTarget final: public entt::loader<aik::resource::RenderTarget, aik::
         void allocate(BufferTarget bufferTarget, GLsizeiptr size = 1024 - 1024, GLenum usage = GL_STATIC_DRAW);
         void createBuffer(BufferTarget bufferTarget);
         void bindBuffer(BufferTarget bufferTarget, bool unbind = false);
-        template <class T> void addBufferData(BufferTarget bufferTarget, std::vector<T> data, unsigned long int largestIndex = 4, GLintptr offset = UINT64_MAX);
+        template <class T> void addBufferData(BufferTarget bufferTarget, std::vector<T> data, GLintptr offset = UINT64_MAX);
         void setupVertexAttributes();
-        std::shared_ptr<aik::resource::RenderTarget> load() const;
+        [[nodiscard]] std::shared_ptr<aik::resource::RenderTarget> load() const;
         GLuint vao_;
         GLuint vbo_;
         GLuint ebo_;
-        unsigned long int vboCurrentSize_;
-        unsigned long int eboCurrentSize_;
+        unsigned long long vboCurrentSize_;
+        unsigned long long eboCurrentSize_;
         bool vaoBound_ = false;
         bool vboBound_ = false;
         bool eboBound_ = false;
-        unsigned long int lastIndex_ = 0;
+        unsigned long long lastIndex_ = 0;
     };
 
     template<class T>
-    void RenderTarget::addBufferData(BufferTarget bufferTarget, std::vector<T> data, unsigned long int largestIndex, GLintptr offset)
+    void RenderTarget::addBufferData(BufferTarget bufferTarget, std::vector<T> data, GLintptr offset)
     {
         bindBuffer(bufferTarget);
         if(offset != UINT64_MAX)

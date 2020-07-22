@@ -57,10 +57,8 @@ void aik::resource::RenderTarget::setupVertexAttributes()
 {
     bindBuffer(BufferTarget::VERTEX_ARRAY);
     bindBuffer(BufferTarget::VERTEX_BUFFER);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), reinterpret_cast<void*>(0));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), reinterpret_cast<void*>(0));
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), reinterpret_cast<void*>(2 * sizeof(float)));
-    glEnableVertexAttribArray(1);
 }
 
 // buffers are allocated enough for 16384 sprites, more than what we should ever need, but we can allocate more if needed
@@ -70,8 +68,8 @@ std::shared_ptr<aik::resource::RenderTarget> aik::resource::RenderTarget::load()
     renderTarget->createBuffer(BufferTarget::VERTEX_ARRAY);
     renderTarget->createBuffer(BufferTarget::VERTEX_BUFFER);
     renderTarget->createBuffer(BufferTarget::ELEMENT_ARRAY);
-    renderTarget->allocate(BufferTarget::VERTEX_BUFFER, 1024*1024, GL_STATIC_DRAW);
+    renderTarget->allocate(BufferTarget::VERTEX_BUFFER, (13000*13000) * 5, GL_DYNAMIC_DRAW);
     renderTarget->setupVertexAttributes();
-    renderTarget->allocate(BufferTarget::ELEMENT_ARRAY, 1024*1024, GL_STATIC_DRAW);
+    renderTarget->allocate(BufferTarget::ELEMENT_ARRAY, (13000*13000) * 5, GL_DYNAMIC_DRAW);
     return renderTarget;
 }

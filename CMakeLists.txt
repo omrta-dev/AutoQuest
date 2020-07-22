@@ -29,19 +29,17 @@ add_executable(${PROJECT_NAME} main.cpp game/Game.cpp game/Game.hpp
         game/components/Clickable.hpp
         game/resource/Shader.cpp game/resource/Shader.hpp
         game/components/Transform.hpp
-        game/Camera.cpp game/Camera.hpp
+        game/systems/Camera.cpp game/systems/Camera.hpp
         game/components/Input.hpp
         game/Utility/CoordinateHelper.hpp game/Utility/CoordinateHelper.cpp
         game/components/Texture.hpp
-        game/components/Animation.hpp)
+        game/components/Animation.hpp
+        game/Utility/HGTMesh.cpp game/Utility/HGTMesh.hpp)
 
 # SFML
 target_link_libraries(${PROJECT_NAME} PRIVATE sfml-audio sfml-graphics sfml-network sfml-system sfml-window)
 # OpenGL
 target_link_libraries(${PROJECT_NAME} PRIVATE glad)
-# FreeType
-target_link_libraries(${PROJECT_NAME} PRIVATE ${FREETYPE_LIBRARIES})
-target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_INCLUDE_DIRS})
 # ECS EnTT
 target_link_libraries(${PROJECT_NAME} PRIVATE EnTT)
 # Cereal for serialization

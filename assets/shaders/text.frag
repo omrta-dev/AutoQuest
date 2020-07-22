@@ -1,9 +1,7 @@
 #version 330 core
 
-varying vec2 texpos;
-uniform sampler2D tex;
-//uniform vec4 color;
+//uniform sampler2D textureMap;
 
 void main() {
-    gl_FragColor = vec4(1, 1, 1, texture2D(tex, texpos).a) * vec4(0,0,0,1);
+    gl_FragColor = vec4(1.0, 0.6, 0.4, 1.0);
 }

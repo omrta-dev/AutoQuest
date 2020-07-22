@@ -32,7 +32,7 @@ class Shader final: public entt::loader<aik::resource::Shader, aik::resource::Sh
 		void glUniform(GLuint location, glm::vec4 data);
 		void glUniformMatrix(GLuint location, GLboolean transpose, glm::mat3 data);
 		void glUniformMatrix(GLuint location, GLboolean transpose, glm::mat4 data);
-    private:
+private:
 		GLuint m_iProgramID;
 		std::vector<GLuint> m_shaderIDs;
 		bool m_isBound;

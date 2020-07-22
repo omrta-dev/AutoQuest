@@ -1,14 +1,16 @@
 #version 330 core
 
-layout (location = 0) in vec2 vertexPosition;
-layout (location = 1) in vec2 uv;
+layout (location = 0) in vec3 vertexPosition;
 
-uniform vec2 position;
+out float zPos;
+
+uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
-uniform vec2 scale;
+uniform float zScale;
 
 void main()
 {
-    gl_Position = projection * view * vec4((vertexPosition + scale) + position, 1.0, 1.0);
+    gl_Position = projection * view * model * vec4(vertexPosition.xy, vertexPosition.z * zScale, 1.0);
+    zPos = vertexPosition.z;
 }

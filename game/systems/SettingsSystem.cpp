@@ -12,6 +12,7 @@ const std::string configFilePath = "/config.json";
 
 aik::SettingsSystem::SettingsSystem(entt::registry *registry)
 {
+    // on construct we try to read or create the settings file
     registry_ = registry;
     registry_->emplace<aik::Component::Settings>(registry_->create());
     if(hasSettingsFile(configFilePath))
@@ -34,6 +35,7 @@ bool aik::SettingsSystem::hasSettingsFile(const std::string & settingsFileLocati
     return std::filesystem::exists(std::filesystem::current_path().string() + settingsFileLocation);
 }
 
+// loading a file requires creating a jsonInput, reading the file, parsing the json with entt(ECS), and storing the parsed data
 void aik::SettingsSystem::loadSettingsFile()
 {
     entt::registry dest;
@@ -47,6 +49,7 @@ void aik::SettingsSystem::loadSettingsFile()
     registry_->patch<aik::Component::Settings>(destinationSettings, [loadedSettings](auto & newSetting) {newSetting = loadedSettings;});
 }
 
+// saving a file requires serializing the settings file and writing it with a json output object
 void aik::SettingsSystem::saveSettingsFile()
 {
     std::ofstream storage(std::filesystem::current_path().string() + configFilePath, std::ofstream::trunc | std::ofstream::out);
@@ -57,8 +60,8 @@ void aik::SettingsSystem::saveSettingsFile()
     }
 }
 
+// there should always only be 1 settings entity so we can just return that
 aik::Component::Settings &aik::SettingsSystem::getSettings()
 {
-    // there should always only be 1 settings entity so we can just return that
     return registry_->view<aik::Component::Settings>().get(registry_->view<aik::Component::Settings>().front());
 }

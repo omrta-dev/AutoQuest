@@ -6,7 +6,8 @@
 #include <map>
 #include <entt/resource/loader.hpp>
 #include <glad/glad.h>
-#include <glm/vec2.hpp>
+#include <glm/vec4.hpp>
+#include <vector>
 
 namespace aik::resource
 {

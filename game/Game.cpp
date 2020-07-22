@@ -6,10 +6,9 @@
 #include "SFML/Window/Event.hpp"
 #include <glad/glad.h>
 #include <components/Texture.hpp>
-#include "Camera.hpp"
-#include "components/Transform.hpp"
-
-
+#include "systems/Camera.hpp"
+#include <filesystem>
+#include <components/Transform.hpp>
 
 void GLAPIENTRY
 MessageCallback( GLenum source,
@@ -28,16 +27,17 @@ MessageCallback( GLenum source,
 Game::Game() : gladStatus(gladLoadGL()), settingsSystem_(&registry_), renderSystem_(&registry_), inputSystem_(&registry_)
 {
     aik::Component::Settings settings = settingsSystem_.getSettings();
-    window_.create({settings.width, settings.height}, "", settings.style, sf::ContextSettings(16, 0, 4, 4, 3, sf::ContextSettings::Attribute::Core));
+    window_.create({settings.width, settings.height}, "", settings.style, sf::ContextSettings(16, 8, 4, 4, 3, sf::ContextSettings::Attribute::Core));
     gladLoadGL();
     window_.setFramerateLimit(settings.fps);
     window_.setPosition({settings.position.x, settings.position.y});
     window_.setKeyRepeatEnabled(false);
+    window_.setMouseCursorVisible(false);
     inputSystem_.setWindow(&window_);
 
     // During init, enable debug output
-    glEnable              ( GL_DEBUG_OUTPUT );
-    glDebugMessageCallback( MessageCallback, 0 );
+    glEnable( GL_DEBUG_OUTPUT );
+    glDebugMessageCallback(MessageCallback, 0);
 }
 
 void Game::startGame()
@@ -52,28 +52,44 @@ void Game::startGame()
 void Game::initializeResources()
 {
     renderSystem_.initialize();
-    auto shader = shaderManager_.load<aik::resource::Shader>("wood"_hs, "assets/shaders/vert.vert", "assets/shaders/frag.frag");
+
+    // load shader and buffer resources
+    auto shader = shaderManager_.load<aik::resource::Shader>("shader"_hs, "assets/shaders/vert.vert", "assets/shaders/frag.frag");
     auto buffer = bufferManager_.load<aik::resource::RenderTarget>("game"_hs);
-    auto square = renderSystem_.createSprite(&buffer.get(), &shader.get());
-    registry_.get<aik::Component::Transform>(square).position = glm::vec2(0.0f);
-    registry_.get<aik::Component::Transform>(square).scale = glm::vec2(800.0f);
 
-    auto &tex = registry_.emplace<aik::Component::Texture>(square, GL_TEXTURE_2D_ARRAY);
-    tex.createTextureArray("assets/textures/tilemap.png");
+    // generate a random hgt file
+    std::string hgtPath = "/home/omar/elevations/tt/";
+    entt::entity mesh;
 
-    registry_.emplace<aik::Component::Clickable>(square, []{std::cout << "square was clicked!" << std::endl;}, sf::Mouse::Button::Left, 5.0f);
+    for(const auto & entry : std::filesystem::directory_iterator(hgtPath))
+    {
+        std::cout << entry.path() << std::endl;
+        mesh = renderSystem_.createHGTMesh(&buffer.get(), &shader.get(), entry.path());
+        break;
+    }
+
+    auto& meshRenderable = registry_.get<aik::Component::Renderable>(mesh);
+    auto& transformable = registry_.get<aik::Component::Transform>(mesh);
+
 
     // currently there is one global camera
     auto windowSize = window_.getSize();
     auto& camera = registry_.emplace<aik::Camera>(registry_.create());
-    camera.setLookAt(glm::vec3(0, 0, -1));
-    camera.createOrthographic(0.0f, windowSize.x, windowSize.y, 0.0f, -1000.0f, 1000.0f);
+    camera.setPosition({5.0f, 5.0f, 5.0f});
+    camera.setLookAt({0.0f, 0.0f, 0.0f});
+    camera.setViewport(0, 0, windowSize.x, windowSize.y);
 
-    // add inputs
-    inputSystem_.createKeyInput([this]{registry_.get<aik::Camera>(registry_.view<aik::Camera>().front()).move(aik::CameraMovement::UP);}, sf::Keyboard::W, false);
-    inputSystem_.createKeyInput([this]{registry_.get<aik::Camera>(registry_.view<aik::Camera>().front()).move(aik::CameraMovement::DOWN);}, sf::Keyboard::S, false);
-    inputSystem_.createKeyInput([this]{registry_.get<aik::Camera>(registry_.view<aik::Camera>().front()).move(aik::CameraMovement::LEFT);}, sf::Keyboard::A, false);
-    inputSystem_.createKeyInput([this]{registry_.get<aik::Camera>(registry_.view<aik::Camera>().front()).move(aik::CameraMovement::RIGHT);}, sf::Keyboard::D, false);
+    // create inputs for enabling polygon fill mode
+    inputSystem_.createKeyInput([this]{ glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); }, sf::Keyboard::L, false);
+    inputSystem_.createKeyInput([this]{ glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); }, sf::Keyboard::F, false);
+    inputSystem_.createKeyInput([this, &meshRenderable]{ meshRenderable.zScale += .01f;}, sf::Keyboard::Add, false);
+    inputSystem_.createKeyInput([this, &meshRenderable]{ meshRenderable.zScale -= .01f;}, sf::Keyboard::Subtract, false);
+    inputSystem_.createKeyInput([this, &meshRenderable]{ meshRenderable.shadeMultiplier += .05f;}, sf::Keyboard::Multiply, false);
+    inputSystem_.createKeyInput([this, &meshRenderable]{ meshRenderable.shadeMultiplier -= .05f;}, sf::Keyboard::Divide, false);
+    inputSystem_.createKeyInput([this, &meshRenderable]{
+        meshRenderable.shadeMultiplier = 1.0f;
+        meshRenderable.zScale = 1.0f;
+        }, sf::Keyboard::R, false);
 }
 
 void Game::gameLoop()
@@ -94,10 +110,6 @@ void Game::processInput(const float& dt)
         if (e.type == sf::Event::Resized)
         {
             glViewport(0, 0, e.size.width, e.size.height);
-            auto windowSize = window_.getSize();
-            auto cameraView = registry_.view<aik::Camera>();
-            auto& camera = registry_.get<aik::Camera>(cameraView.front());
-            camera.createOrthographic(0.0f, windowSize.x, windowSize.y, 0.0f, -1000.0f, 1000.0f);
         }
         if(e.type == sf::Event::KeyPressed)
         {
@@ -124,6 +136,12 @@ void Game::processInput(const float& dt)
 
 void Game::update(const float& dt)
 {
+    auto cameraView = registry_.view<aik::Camera>();
+    auto& camera = registry_.get<aik::Camera>(cameraView.front());
+    camera.moveKeyboard();
+    camera.update();
+    camera.processMouseButtons();
+    camera.processMouseMovement(window_);
 }
 
 void Game::render()
@@ -143,4 +161,9 @@ void Game::updatePreferences()
     auto position = window_.getPosition();
     auto & settings = settingsSystem_.getSettings();
     settings.position = {position.x, position.y};
+}
+
+void Game::createHGTMeshes()
+{
+
 }

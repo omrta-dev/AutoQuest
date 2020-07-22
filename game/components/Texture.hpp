@@ -11,6 +11,11 @@ namespace aik::Component
     class Texture
     {
     public:
+        Texture(const Texture& otherTexture)
+        {
+            this->type = otherTexture.type;
+            this->id = otherTexture.id;
+        }
         Texture(GLenum t)
         {
             type = t;

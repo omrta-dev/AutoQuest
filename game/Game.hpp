@@ -8,9 +8,10 @@
 #include <SFML/System/Clock.hpp>
 
 #include <entt/entt.hpp>
-#include "systems/SettingsSystem.hpp"
-#include "systems/RenderSystem.hpp"
-#include "systems/InputSystem.hpp"
+#include <systems/SettingsSystem.hpp>
+#include <systems/RenderSystem.hpp>
+#include <systems/InputSystem.hpp>
+#include <resource/Font.hpp>
 
 class Game
 {
@@ -25,6 +26,7 @@ private:
     void render();
     void close();
     void updatePreferences();
+    void createHGTMeshes();
 
     int gladStatus = -99;
     sf::RenderWindow window_;
