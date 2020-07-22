@@ -162,8 +162,3 @@ void Game::updatePreferences()
     auto & settings = settingsSystem_.getSettings();
     settings.position = {position.x, position.y};
 }
-
-void Game::createHGTMeshes()
-{
-
-}

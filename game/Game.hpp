@@ -26,7 +26,6 @@ private:
     void render();
     void close();
     void updatePreferences();
-    void createHGTMeshes();
 
     int gladStatus = -99;
     sf::RenderWindow window_;
